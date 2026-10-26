@@ -1,0 +1,25 @@
+{
+  "name": "DirhamPulse — UAE Personal Finance & Expense Portal",
+  "short_name": "DirhamPulse",
+  "description": "Mobile-first UAE personal finance tracker with receipt OCR, SMS parsing, credit card statement management, and AED budget analytics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#0d9488",
+  "orientation": "portrait-primary",
+  "lang": "en-AE",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

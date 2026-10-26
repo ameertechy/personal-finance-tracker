@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#0f172a"/>
+  <rect x="40" y="40" width="432" height="432" rx="84" fill="#0d9488" fill-opacity="0.18" stroke="#14b8a6" stroke-width="8"/>
+  <text x="256" y="286" text-anchor="middle" font-family="system-ui, sans-serif" font-size="116" font-weight="800" fill="#2dd4bf">AED</text>
+  <path d="M128 356 H384" stroke="#f59e0b" stroke-width="16" stroke-linecap="round"/>
+</svg>
