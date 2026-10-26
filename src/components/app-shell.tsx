@@ -58,8 +58,8 @@ const NAV_GROUPS: Array<{
     items: [
       {
         id: "cards",
-        label: "Cards & Bills",
-        shortLabel: "Cards",
+        label: "Cards, Loans & Debt",
+        shortLabel: "Debt",
         icon: CreditCard,
       },
       {
@@ -124,7 +124,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     state?.notifications.filter((n) => !n.is_read) ?? [];
 
   const openStatementsCount =
-    state?.statements.filter((s) => s.status !== "paid").length ?? 0;
+    (state?.statements.filter((s) => s.status !== "paid").length ?? 0) +
+    (state?.loans?.filter((l) => l.status !== "paid_off").length ?? 0);
 
   const handleRequestBrowserPush = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {

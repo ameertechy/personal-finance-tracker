@@ -1,6 +1,6 @@
 {
  "url": "http://127.0.0.1:43120",
- "at": "2026-10-26T10:52:37.687Z",
+ "at": "2026-10-26T11:05:48.975Z",
  "allow": [],
  "viewports": [
   {
@@ -9,8 +9,8 @@
    "load": "load",
    "screens": 2,
    "filled": [
-    0.64,
-    0.66
+    0.66,
+    0.73
    ],
    "motion": {
     "elements": 0,
@@ -26,9 +26,9 @@
      "h": 900
     },
     "page": {
-     "height": 1495,
+     "height": 1519,
      "screens": 1.7,
-     "words": 497,
+     "words": 506,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -147,8 +147,8 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0.11,
-     "centerShare": 0.05,
-     "smallText": 28
+     "centerShare": 0.07,
+     "smallText": 25
     },
     "eyebrows": [],
     "numbered": [],
@@ -183,7 +183,7 @@
      "textColors": [
       {
        "color": "#0a0a0a",
-       "share": 0.51
+       "share": 0.53
       },
       {
        "color": "#525866",
@@ -191,14 +191,14 @@
       },
       {
        "color": "#247b50",
-       "share": 0.02
+       "share": 0.01
       },
       {
        "color": "#2c3038",
-       "share": 0.02
+       "share": 0.01
       },
       {
-       "color": "#92400e",
+       "color": "#ffffff",
        "share": 0.01
       }
      ],
@@ -214,8 +214,8 @@
      "lowContrast": []
     },
     "buttons": {
-     "count": 4,
-     "inHero": 4,
+     "count": 7,
+     "inHero": 5,
      "radius": 6,
      "height": 36,
      "withShadow": 0,
@@ -226,7 +226,8 @@
       "Overview",
       "Alerts 3 open",
       "Online",
-      "Record Expense / Scan Receipt"
+      "Record Expense / Scan Receipt",
+      "Pay card"
      ]
     },
     "surfaces": {
@@ -278,7 +279,7 @@
      "w": 1440,
      "h": 900
     },
-    "pageH": 1495,
+    "pageH": 1519,
     "margins": {
      "left": 12,
      "right": 45
@@ -289,7 +290,7 @@
       "tag": "section",
       "top": 121,
       "height": 618,
-      "words": 126,
+      "words": 127,
       "media": 1,
       "middle": 0,
       "heading": {
@@ -311,8 +312,8 @@
       "sel": "div.app-grid",
       "tag": "div",
       "top": 755,
-      "height": 340,
-      "words": 141,
+      "height": 364,
+      "words": 145,
       "media": 0,
       "middle": 58,
       "heading": {
@@ -333,7 +334,7 @@
      {
       "sel": "div.app-grid",
       "tag": "div",
-      "top": 1111,
+      "top": 1135,
       "height": 344,
       "words": 129,
       "media": 0,
@@ -477,18 +478,18 @@
     "numbers": {
      "cells": 1,
      "leftAligned": 0,
-     "figures": 1,
-     "tabularShare": 1,
+     "figures": 2,
+     "tabularShare": 0.5,
      "kpiMax": 14
     },
     "rows": {
      "count": 9,
-     "median": 61
+     "median": 63
     },
     "chartHues": 1,
     "placeholders": [],
     "type": {
-     "under13": 0.27,
+     "under13": 0.25,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [
@@ -516,8 +517,8 @@
    "load": "load",
    "screens": 3,
    "filled": [
-    0.84,
-    0.87,
+    0.77,
+    0.93,
     0.93
    ],
    "motion": {
@@ -534,9 +535,9 @@
      "h": 1024
     },
     "page": {
-     "height": 2425,
+     "height": 2451,
      "screens": 2.4,
-     "words": 461,
+     "words": 469,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -655,8 +656,8 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0.12,
-     "centerShare": 0.06,
-     "smallText": 24
+     "centerShare": 0.08,
+     "smallText": 21
     },
     "eyebrows": [],
     "numbered": [],
@@ -691,38 +692,38 @@
      "textColors": [
       {
        "color": "#0a0a0a",
-       "share": 0.54
+       "share": 0.56
       },
       {
        "color": "#525866",
-       "share": 0.4
+       "share": 0.39
       },
       {
        "color": "#247b50",
        "share": 0.02
       },
       {
-       "color": "#2c3038",
+       "color": "#ffffff",
        "share": 0.01
       },
       {
-       "color": "#ffffff",
+       "color": "#2c3038",
        "share": 0.01
       }
      ],
      "button": {
-      "bg": "#141414",
+      "bg": "#ffffff",
       "hsl": {
        "h": 0,
        "s": 0,
-       "l": 0.08
+       "l": 1
       },
-      "fg": "#ffffff"
+      "fg": "#0a0a0a"
      },
      "lowContrast": []
     },
     "buttons": {
-     "count": 3,
+     "count": 6,
      "inHero": 3,
      "radius": 6,
      "height": 36,
@@ -792,7 +793,7 @@
      "w": 768,
      "h": 1024
     },
-    "pageH": 2425,
+    "pageH": 2451,
     "margins": {
      "left": 20,
      "right": 41
@@ -803,7 +804,7 @@
       "tag": "div",
       "top": 68,
       "height": 125,
-      "words": 33,
+      "words": 34,
       "media": 0,
       "middle": 0,
       "heading": {
@@ -812,9 +813,9 @@
        "tag": "h1"
       },
       "left": 20,
-      "right": 85,
+      "right": 98,
       "textLeft": 20,
-      "textRight": 85,
+      "textRight": 98,
       "fullBleed": false,
       "footer": false,
       "hero": true,
@@ -825,8 +826,8 @@
       "sel": "section.panel.p-0",
       "tag": "section",
       "top": 213,
-      "height": 823,
-      "words": 126,
+      "height": 807,
+      "words": 127,
       "media": 1,
       "middle": 0,
       "heading": {
@@ -837,7 +838,7 @@
       "left": 42,
       "right": 42,
       "textLeft": 61,
-      "textRight": 63,
+      "textRight": 68,
       "fullBleed": false,
       "footer": false,
       "hero": true,
@@ -847,11 +848,11 @@
      {
       "sel": "div.app-grid",
       "tag": "div",
-      "top": 1052,
-      "height": 638,
-      "words": 141,
+      "top": 1036,
+      "height": 680,
+      "words": 145,
       "media": 0,
-      "middle": 5,
+      "middle": 0,
       "heading": {
        "text": "Category budget plan vs. spent",
        "size": 16,
@@ -870,7 +871,7 @@
      {
       "sel": "div.app-grid",
       "tag": "div",
-      "top": 1706,
+      "top": 1732,
       "height": 635,
       "words": 129,
       "media": 0,
@@ -998,18 +999,18 @@
     "numbers": {
      "cells": 1,
      "leftAligned": 0,
-     "figures": 1,
-     "tabularShare": 1,
+     "figures": 2,
+     "tabularShare": 0.5,
      "kpiMax": 14
     },
     "rows": {
      "count": 9,
-     "median": 43
+     "median": 57
     },
     "chartHues": 1,
     "placeholders": [],
     "type": {
-     "under13": 0.27,
+     "under13": 0.25,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [
@@ -1027,7 +1028,7 @@
      "size": 24,
      "top": 68
     },
-    "colourShare": 0.004
+    "colourShare": 0.003
    },
    "consoleErrors": []
   },
@@ -1037,9 +1038,9 @@
    "load": "load",
    "screens": 4,
    "filled": [
+    0.89,
+    0.9,
     0.88,
-    0.93,
-    0.87,
     0.93
    ],
    "motion": {
@@ -1056,9 +1057,9 @@
      "h": 844
     },
     "page": {
-     "height": 3160,
-     "screens": 3.7,
-     "words": 461,
+     "height": 3168,
+     "screens": 3.8,
+     "words": 469,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -1167,6 +1168,27 @@
       "kind": "heading"
      },
      {
+      "text": "AED 8,317.55",
+      "words": 2,
+      "chars": 12,
+      "lines": 2,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Geist",
+      "weight": 500,
+      "tracking": -0.01,
+      "leading": 1.15,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.29,
+      "top": 497,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
       "text": "AED 6,587.55",
       "words": 2,
       "chars": 12,
@@ -1184,27 +1206,6 @@
       "position": "right",
       "widthRatio": 0.29,
       "top": 497,
-      "tag": "div",
-      "kind": "heading"
-     },
-     {
-      "text": "AED 8,317.55",
-      "words": 2,
-      "chars": 12,
-      "lines": 2,
-      "size": 24,
-      "vw": 6.2,
-      "font": "Geist",
-      "weight": 500,
-      "tracking": -0.01,
-      "leading": 1.15,
-      "upper": true,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.29,
-      "top": 505,
       "tag": "div",
       "kind": "heading"
      }
@@ -1261,8 +1262,8 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0.12,
-     "centerShare": 0.06,
-     "smallText": 24
+     "centerShare": 0.08,
+     "smallText": 21
     },
     "eyebrows": [],
     "numbered": [],
@@ -1297,38 +1298,38 @@
      "textColors": [
       {
        "color": "#0a0a0a",
-       "share": 0.54
+       "share": 0.56
       },
       {
        "color": "#525866",
-       "share": 0.4
+       "share": 0.39
       },
       {
        "color": "#247b50",
        "share": 0.02
       },
       {
-       "color": "#2c3038",
+       "color": "#ffffff",
        "share": 0.01
       },
       {
-       "color": "#ffffff",
+       "color": "#2c3038",
        "share": 0.01
       }
      ],
      "button": {
-      "bg": "#141414",
+      "bg": "#ffffff",
       "hsl": {
        "h": 0,
        "s": 0,
-       "l": 0.08
+       "l": 1
       },
-      "fg": "#ffffff"
+      "fg": "#0a0a0a"
      },
      "lowContrast": []
     },
     "buttons": {
-     "count": 3,
+     "count": 6,
      "inHero": 3,
      "radius": 6,
      "height": 36,
@@ -1393,7 +1394,7 @@
      "w": 390,
      "h": 844
     },
-    "pageH": 3160,
+    "pageH": 3168,
     "margins": {
      "left": 20,
      "right": 30
@@ -1404,7 +1405,7 @@
       "tag": "div",
       "top": 68,
       "height": 145,
-      "words": 33,
+      "words": 34,
       "media": 0,
       "middle": 0,
       "heading": {
@@ -1413,9 +1414,9 @@
        "tag": "h1"
       },
       "left": 20,
-      "right": 40,
+      "right": 25,
       "textLeft": 20,
-      "textRight": 40,
+      "textRight": 25,
       "fullBleed": false,
       "footer": false,
       "hero": true,
@@ -1426,8 +1427,8 @@
       "sel": "section.panel.p-0",
       "tag": "section",
       "top": 233,
-      "height": 1007,
-      "words": 108,
+      "height": 991,
+      "words": 106,
       "media": 1,
       "middle": 0,
       "heading": {
@@ -1448,9 +1449,9 @@
      {
       "sel": "div.app-grid",
       "tag": "div",
-      "top": 1256,
-      "height": 957,
-      "words": 133,
+      "top": 1240,
+      "height": 981,
+      "words": 143,
       "media": 0,
       "middle": 0,
       "heading": {
@@ -1459,7 +1460,7 @@
        "tag": "h2"
       },
       "left": 41,
-      "right": 41,
+      "right": 0,
       "textLeft": 41,
       "textRight": 41,
       "fullBleed": false,
@@ -1471,7 +1472,7 @@
      {
       "sel": "div.app-grid",
       "tag": "div",
-      "top": 2229,
+      "top": 2237,
       "height": 847,
       "words": 122,
       "media": 0,
@@ -1599,8 +1600,8 @@
     "numbers": {
      "cells": 1,
      "leftAligned": 0,
-     "figures": 1,
-     "tabularShare": 1,
+     "figures": 2,
+     "tabularShare": 0.5,
      "kpiMax": 14
     },
     "rows": {
@@ -1610,7 +1611,7 @@
     "chartHues": 1,
     "placeholders": [],
     "type": {
-     "under13": 0.27,
+     "under13": 0.25,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [

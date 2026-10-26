@@ -24,6 +24,7 @@ export const DEFAULT_UAE_EXPENSE_CATEGORIES: Array<{
   { name: "Other", slug: "other", kind: "expense", color: "#8a8a8a", icon: "MoreHorizontal" },
   { name: "Salary & Income", slug: "salary-income", kind: "income", color: "#247b50", icon: "Wallet" },
   { name: "Credit Card Repayment", slug: "cc-repayment", kind: "repayment", color: "#141414", icon: "CreditCard" },
+  { name: "Loan & EMI Repayment", slug: "loan-emi-repayment", kind: "repayment", color: "#1d5fbf", icon: "Landmark" },
   { name: "Transfer", slug: "transfer", kind: "transfer", color: "#616875", icon: "ArrowLeftRight" },
 ];
 
@@ -81,6 +82,8 @@ export function createInitialUserFinancialState(params: {
       recurring: [],
       statements: [],
       cc_payments: [],
+      loans: [],
+      loan_payments: [],
       receipts: [],
       extraction_jobs: [],
       notification_preferences: {
@@ -567,6 +570,79 @@ export function createInitialUserFinancialState(params: {
     },
   ];
 
+  const loanPersonalId = `loan_${userId}_enbd_personal`;
+  const loanEppId = `loan_${userId}_fab_epp`;
+
+  const loans: UserFinancialState["loans"] = [
+    {
+      id: loanPersonalId,
+      user_id: userId,
+      loan_name: "Emirates NBD Personal Loan",
+      lender_name: "Emirates NBD",
+      loan_type: "personal_loan",
+      currency: "AED",
+      principal_amount: 120000.0,
+      outstanding_principal: 72400.0,
+      interest_rate_apr: 3.99,
+      monthly_emi: 3540.0,
+      total_installments: 36,
+      paid_installments: 16,
+      remaining_installments: 20,
+      start_date: "2025-06-01",
+      next_payment_due_date: "2026-11-01",
+      due_day_of_month: 1,
+      linked_account_id: accEnbdId,
+      linked_card_id: null,
+      status: "active",
+      notes: "Salary-transfer personal loan · Auto-debit on 1st of month",
+      created_at: nowIso,
+      updated_at: nowIso,
+    },
+    {
+      id: loanEppId,
+      user_id: userId,
+      loan_name: "Apple MacBook Pro 0% Easy Payment Plan",
+      lender_name: "First Abu Dhabi Bank (FAB)",
+      loan_type: "card_installment_plan",
+      currency: "AED",
+      principal_amount: 7200.0,
+      outstanding_principal: 3600.0,
+      interest_rate_apr: 0.0,
+      monthly_emi: 600.0,
+      total_installments: 12,
+      paid_installments: 6,
+      remaining_installments: 6,
+      start_date: "2026-05-11",
+      next_payment_due_date: "2026-11-11",
+      due_day_of_month: 11,
+      linked_account_id: accEnbdId,
+      linked_card_id: cardFabCreditId,
+      status: "active",
+      notes: "12-month 0% installment plan on FAB Cashback card",
+      created_at: nowIso,
+      updated_at: nowIso,
+    },
+  ];
+
+  const loan_payments: UserFinancialState["loan_payments"] = [
+    {
+      id: `lnpay_${userId}_1`,
+      user_id: userId,
+      loan_id: loanPersonalId,
+      source_account_id: accEnbdId,
+      linked_transaction_id: null,
+      amount: 3540.0,
+      principal_component: 3299.27,
+      interest_component: 240.73,
+      currency: "AED",
+      payment_date: "2026-10-01",
+      reference_number: "EMI-ENBD-OCT26",
+      notes: "October 2026 Personal Loan EMI (Installment 16 of 36)",
+      created_at: nowIso,
+      updated_at: nowIso,
+    },
+  ];
+
   const budgets: UserFinancialState["budgets"] = [
     {
       id: `bdg_${userId}_overall`,
@@ -853,6 +929,8 @@ export function createInitialUserFinancialState(params: {
     recurring,
     statements,
     cc_payments,
+    loans,
+    loan_payments,
     receipts,
     extraction_jobs,
     notification_preferences: {

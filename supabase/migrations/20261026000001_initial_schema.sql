@@ -285,6 +285,51 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 15. loans (Personal loans, auto loans, mortgages, Tabby/Tamara BNPL, and 0% card installment plans)
+CREATE TABLE IF NOT EXISTS public.loans (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  loan_name TEXT NOT NULL,
+  lender_name TEXT NOT NULL,
+  loan_type TEXT NOT NULL DEFAULT 'personal_loan'
+    CHECK (loan_type IN ('personal_loan', 'auto_loan', 'home_mortgage', 'bnpl_installment', 'card_installment_plan')),
+  currency TEXT NOT NULL DEFAULT 'AED' CHECK (char_length(currency) = 3),
+  principal_amount NUMERIC(14, 2) NOT NULL CHECK (principal_amount >= 0),
+  outstanding_principal NUMERIC(14, 2) NOT NULL CHECK (outstanding_principal >= 0),
+  interest_rate_apr NUMERIC(5, 2) NOT NULL DEFAULT 0.00 CHECK (interest_rate_apr >= 0),
+  monthly_emi NUMERIC(14, 2) NOT NULL CHECK (monthly_emi >= 0),
+  total_installments INTEGER NOT NULL DEFAULT 12 CHECK (total_installments >= 1),
+  paid_installments INTEGER NOT NULL DEFAULT 0 CHECK (paid_installments >= 0),
+  remaining_installments INTEGER NOT NULL DEFAULT 12 CHECK (remaining_installments >= 0),
+  start_date DATE NOT NULL,
+  next_payment_due_date DATE NOT NULL,
+  due_day_of_month INTEGER NOT NULL DEFAULT 1 CHECK (due_day_of_month BETWEEN 1 AND 31),
+  linked_account_id UUID REFERENCES public.financial_accounts(id) ON DELETE SET NULL,
+  linked_card_id UUID REFERENCES public.cards(id) ON DELETE SET NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'overdue', 'paid_off')),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 16. loan_payments (Tracks each monthly EMI or early settlement payment against a loan)
+CREATE TABLE IF NOT EXISTS public.loan_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  loan_id UUID NOT NULL REFERENCES public.loans(id) ON DELETE CASCADE,
+  source_account_id UUID REFERENCES public.financial_accounts(id) ON DELETE SET NULL,
+  linked_transaction_id UUID REFERENCES public.transactions(id) ON DELETE SET NULL,
+  amount NUMERIC(14, 2) NOT NULL CHECK (amount > 0),
+  principal_component NUMERIC(14, 2) NOT NULL DEFAULT 0.00 CHECK (principal_component >= 0),
+  interest_component NUMERIC(14, 2) NOT NULL DEFAULT 0.00 CHECK (interest_component >= 0),
+  currency TEXT NOT NULL DEFAULT 'AED' CHECK (char_length(currency) = 3),
+  payment_date DATE NOT NULL,
+  reference_number TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Indexes for fast queries
 CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON public.transactions(user_id, transaction_date DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_type ON public.transactions(user_id, transaction_type);
@@ -296,6 +341,8 @@ CREATE INDEX IF NOT EXISTS idx_statements_user_due ON public.credit_card_stateme
 CREATE INDEX IF NOT EXISTS idx_budgets_user_month ON public.budgets(user_id, month_key);
 CREATE INDEX IF NOT EXISTS idx_recurring_user_due ON public.recurring_transactions(user_id, next_due_date ASC);
 CREATE INDEX IF NOT EXISTS idx_extraction_jobs_user ON public.extraction_jobs(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_loans_user_due ON public.loans(user_id, next_payment_due_date ASC);
+CREATE INDEX IF NOT EXISTS idx_loan_payments_user ON public.loan_payments(user_id, payment_date DESC);
 
 -- Triggers for updated_at
 CREATE TRIGGER trg_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -310,6 +357,8 @@ CREATE TRIGGER trg_recurring_transactions_updated_at BEFORE UPDATE ON public.rec
 CREATE TRIGGER trg_cc_statements_updated_at BEFORE UPDATE ON public.credit_card_statements FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 CREATE TRIGGER trg_cc_payments_updated_at BEFORE UPDATE ON public.credit_card_payments FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 CREATE TRIGGER trg_notification_prefs_updated_at BEFORE UPDATE ON public.notification_preferences FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_loans_updated_at BEFORE UPDATE ON public.loans FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER trg_loan_payments_updated_at BEFORE UPDATE ON public.loan_payments FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- =============================================================================
 -- Row Level Security (RLS) Policies — Strict Per-User Data Isolation
@@ -329,6 +378,8 @@ ALTER TABLE public.credit_card_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.loans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.loan_payments ENABLE ROW LEVEL SECURITY;
 
 -- Policy helper macro per table
 CREATE POLICY "Users manage own profile" ON public.profiles
@@ -371,6 +422,12 @@ CREATE POLICY "Users manage own notifications" ON public.notifications
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users manage own audit_logs" ON public.audit_logs
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users manage own loans" ON public.loans
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users manage own loan_payments" ON public.loan_payments
   FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- =============================================================================

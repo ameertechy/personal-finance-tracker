@@ -10,7 +10,6 @@ import {
   toFils,
 } from "@/lib/money";
 import {
-  daysBetweenDubaiDates,
   formatDubaiDate,
   getDubaiToday,
 } from "@/lib/dubai-time";
@@ -23,9 +22,11 @@ import {
 type OverviewMetricTab = "available" | "income" | "spending" | "liability";
 
 export function DashboardView() {
-  const { state, selectedMonth, setActiveSection } = useFinance();
+  const { state, selectedMonth, setActiveSection, mutateFinance } =
+    useFinance();
   const [selectedTab, setSelectedTab] =
     useState<OverviewMetricTab>("available");
+  const [quickPayNotice, setQuickPayNotice] = useState<string | null>(null);
 
   const today = getDubaiToday();
 
@@ -40,6 +41,7 @@ export function DashboardView() {
       statements: state.statements,
       budgets: state.budgets,
       recurring: state.recurring,
+      loans: state.loans || [],
     });
   }, [state, selectedMonth]);
 
@@ -142,13 +144,16 @@ export function DashboardView() {
       if (selectedTab === "income") {
         return {
           label: `${d} Oct`,
-          value: Math.max(0, fromFils(toFils(effectiveInc) - toFils(runningSpend))),
+          value: Math.max(
+            0,
+            fromFils(toFils(effectiveInc) - toFils(runningSpend))
+          ),
         };
       }
       if (selectedTab === "liability") {
         return {
           label: `${d} Oct`,
-          value: summary.totalCreditCardOutstanding,
+          value: summary.totalCombinedDebt,
         };
       }
       return {
@@ -165,22 +170,25 @@ export function DashboardView() {
     .filter((s) => s.status !== "paid")
     .sort((a, b) => a.payment_due_date.localeCompare(b.payment_due_date));
 
+  const activeLoans = (state.loans || [])
+    .filter((l) => l.status !== "paid_off")
+    .sort((a, b) =>
+      a.next_payment_due_date.localeCompare(b.next_payment_due_date)
+    );
+
   const upcomingRecurring = state.recurring
     .filter((r) => r.is_active && r.kind === "expense")
     .sort((a, b) => a.next_due_date.localeCompare(b.next_due_date));
 
-  const topBudgetRisk = categoryBreakdown.find(
-    (c) => c.limitAmount > 0 && c.utilizationPct >= 75
-  );
+  const nextLoan = activeLoans[0];
   const nextDueStmt = upcomingStatements[0];
   const nextDueCard = nextDueStmt
     ? state.cards.find((c) => c.id === nextDueStmt.card_id)
     : null;
 
-  const oneFindingText =
-    topBudgetRisk && nextDueStmt
-      ? `${topBudgetRisk.categoryName} is at ${topBudgetRisk.utilizationPct}% of its ${formatCurrency(topBudgetRisk.limitAmount)} plan, and ${formatCurrency(nextDueStmt.outstanding_balance)} on ${nextDueCard?.display_name || "Credit Card"} (••${nextDueCard?.last_four || "4821"}) is due on ${formatDubaiDate(nextDueStmt.payment_due_date)}.`
-      : `Net confirmed spending is ${formatCurrency(summary.netExpenses)} across ${state.transactions.length} ledger entries in ${selectedMonth} (${state.profile.timezone}).`;
+  const oneFindingText = nextLoan && nextDueStmt
+    ? `${nextLoan.loan_name} EMI of ${formatCurrency(nextLoan.monthly_emi)} is due ${formatDubaiDate(nextLoan.next_payment_due_date)}, and ${formatCurrency(nextDueStmt.outstanding_balance)} on ${nextDueCard?.display_name || "Credit Card"} (••${nextDueCard?.last_four || "4821"}) is due ${formatDubaiDate(nextDueStmt.payment_due_date)}.`
+    : `Net confirmed spending is ${formatCurrency(summary.netExpenses)} across ${state.transactions.length} ledger entries in ${selectedMonth} (${state.profile.timezone}).`;
 
   const planRows = categoryBreakdown
     .filter((c) => c.limitAmount > 0 || c.spentAmount > 0)
@@ -199,7 +207,6 @@ export function DashboardView() {
 
   return (
     <div className="space-y-4">
-      {/* Title Row with One Finding & Primary Action */}
       <div className="title-row">
         <div>
           <h1>Overview · {selectedMonth}</h1>
@@ -217,6 +224,15 @@ export function DashboardView() {
         </div>
       </div>
 
+      {quickPayNotice && (
+        <div
+          role="status"
+          className="p-3 rounded-[6px] bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)] text-[13px]"
+        >
+          {quickPayNotice}
+        </div>
+      )}
+
       {/* Main Card: Divided KPI Tabs + Time-Series Chart + Salary Bridge Table */}
       <section className="panel p-0 overflow-hidden">
         <div
@@ -224,7 +240,7 @@ export function DashboardView() {
           aria-label="Financial overview metrics"
           className="kpis border-0 border-b border-[var(--border)] rounded-none"
         >
-          {/* Lead Answer KPI (32px, >= 1.3x sibling KPIs) */}
+          {/* Lead Answer KPI (32px) */}
           <button
             type="button"
             role="tab"
@@ -235,10 +251,7 @@ export function DashboardView() {
             <div className="kpi-label">
               Estimated available funds (calculated)
             </div>
-            <div
-              data-testid="kpi-available-funds"
-              className="kpi-value lead"
-            >
+            <div data-testid="kpi-available-funds" className="kpi-value lead">
               {formatCurrency(summary.estimatedAvailableFunds)}
             </div>
             <div className="kpi-delta">
@@ -288,7 +301,9 @@ export function DashboardView() {
             onClick={() => setSelectedTab("spending")}
             className="kpi"
           >
-            <div className="kpi-label">Confirmed spending ({selectedMonth})</div>
+            <div className="kpi-label">
+              Confirmed spending ({selectedMonth})
+            </div>
             <div data-testid="kpi-total-spending" className="kpi-value">
               {formatCurrency(summary.netExpenses)}
             </div>
@@ -306,7 +321,7 @@ export function DashboardView() {
             </div>
           </button>
 
-          {/* Sibling KPI 4: Credit Card Outstanding Liability */}
+          {/* Sibling KPI 4: Credit Cards & Personal Loans Debt */}
           <button
             type="button"
             role="tab"
@@ -314,16 +329,16 @@ export function DashboardView() {
             onClick={() => setSelectedTab("liability")}
             className="kpi"
           >
-            <div className="kpi-label">Credit card outstanding</div>
+            <div className="kpi-label">Cards &amp; personal loans debt</div>
             <div data-testid="kpi-cc-outstanding" className="kpi-value">
               {formatCurrency(summary.totalCreditCardOutstanding)}
             </div>
             <div className="kpi-delta">
-              {summary.overallCardUtilizationPct}% of{" "}
-              {formatCurrency(summary.totalCreditLimit)} limit · Savings:{" "}
-              <span className="pos">
-                {formatCurrency(summary.monthlySavings)} (
-                {summary.savingsRatePct}%)
+              Loans: {formatCurrency(summary.totalLoansOutstanding)} · DBR:{" "}
+              <span
+                className={summary.debtBurdenRatioPct <= 50 ? "pos" : "neg"}
+              >
+                {summary.debtBurdenRatioPct}%
               </span>
             </div>
           </button>
@@ -338,7 +353,7 @@ export function DashboardView() {
                 : selectedTab === "income"
                 ? "Remaining monthly salary across the month (AED)"
                 : selectedTab === "liability"
-                ? "Credit card liability balance (AED)"
+                ? "Combined credit card & personal loan balance (AED)"
                 : "Cumulative confirmed spending vs. monthly budget (AED)"}
             </h2>
             <span className="text-[12px] text-[var(--muted)]">
@@ -404,16 +419,17 @@ export function DashboardView() {
                 </tr>
                 <tr>
                   <td className="font-medium">
-                    Unpaid prior-period statement obligations
+                    Monthly personal loan &amp; installment EMIs
                   </td>
                   <td className="text-[var(--muted)]">
-                    Deducted from estimated available funds
+                    {activeLoans.length} active loan(s) · Total principal{" "}
+                    {formatCurrency(summary.totalLoansOutstanding)}
                   </td>
                   <td className="n font-medium">
-                    {formatCurrency(summary.unpaidObligationsNotCounted)}
+                    {formatCurrency(summary.monthlyLoanEmiTotal)}
                   </td>
                   <td className="n text-[var(--muted)]">
-                    Due {nextDueStmt ? formatDubaiDate(nextDueStmt.payment_due_date) : "-"}
+                    DBR {summary.debtBurdenRatioPct}% (max 50%)
                   </td>
                 </tr>
               </tbody>
@@ -422,12 +438,9 @@ export function DashboardView() {
         </div>
       </section>
 
-      {/* Row 2: Category Budget Plan vs Spent (6 cols) + Statements & Recurring Commitments (6 cols) */}
+      {/* Row 2: Category Budget Plan vs Spent (6 cols) + Upcoming Card Bills & Personal Loan EMIs (6 cols) */}
       <div className="app-grid">
-        <section
-          className="panel space-y-3"
-          style={{ gridColumn: "span 6" }}
-        >
+        <section className="panel space-y-3" style={{ gridColumn: "span 6" }}>
           <div className="panel-header">
             <h2>Category budget plan vs. spent</h2>
             <button
@@ -456,18 +469,15 @@ export function DashboardView() {
           </div>
         </section>
 
-        <section
-          className="panel space-y-3"
-          style={{ gridColumn: "span 6" }}
-        >
+        <section className="panel space-y-3" style={{ gridColumn: "span 6" }}>
           <div className="panel-header">
-            <h2>Upcoming card statements &amp; scheduled bills</h2>
+            <h2>Upcoming card due dates &amp; personal loan EMIs</h2>
             <button
               type="button"
               onClick={() => setActiveSection("cards")}
               className="text-[13px] font-medium text-[var(--text)] hover:underline cursor-pointer"
             >
-              Pay card bill →
+              Open debt center →
             </button>
           </div>
 
@@ -475,20 +485,15 @@ export function DashboardView() {
             <table className="ledger-table">
               <thead>
                 <tr>
-                  <th>Obligation</th>
-                  <th>Due date (GST)</th>
-                  <th>Status</th>
-                  <th className="n">Remaining due</th>
+                  <th>Debt obligation</th>
+                  <th>Due date</th>
+                  <th className="n">Due amount</th>
+                  <th className="n">Quick pay</th>
                 </tr>
               </thead>
               <tbody>
                 {upcomingStatements.map((stmt) => {
                   const card = state.cards.find((c) => c.id === stmt.card_id);
-                  const daysLeft = daysBetweenDubaiDates(
-                    today,
-                    stmt.payment_due_date
-                  );
-                  const isOverdue = daysLeft < 0 || stmt.status === "overdue";
                   return (
                     <tr key={stmt.id}>
                       <td>
@@ -500,41 +505,85 @@ export function DashboardView() {
                       <td className="num">
                         {formatDubaiDate(stmt.payment_due_date)}
                       </td>
-                      <td>
-                        <span
-                          className={`pill ${
-                            isOverdue
-                              ? "neg"
-                              : stmt.status === "partially_paid"
-                              ? "warn"
-                              : ""
-                          }`}
-                        >
-                          {isOverdue
-                            ? "Overdue"
-                            : stmt.status.replace("_", " ")}
-                        </span>
-                      </td>
                       <td className="n font-semibold">
                         {formatCurrency(stmt.outstanding_balance)}
+                      </td>
+                      <td className="n">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const res = await mutateFinance(
+                              "record_cc_repayment",
+                              {
+                                repayment: {
+                                  card_id: stmt.card_id,
+                                  statement_id: stmt.id,
+                                  source_account_id:
+                                    state.accounts[0]?.id ?? null,
+                                  amount: stmt.outstanding_balance,
+                                  payment_date: today,
+                                  notes: "1-click statement settlement",
+                                },
+                              }
+                            );
+                            if (res.ok) {
+                              setQuickPayNotice(
+                                `Paid ${formatCurrency(
+                                  stmt.outstanding_balance
+                                )} statement for ${card?.display_name}.`
+                              );
+                            }
+                          }}
+                          className="btn h-7 px-2.5 text-[12px]"
+                        >
+                          Pay card
+                        </button>
                       </td>
                     </tr>
                   );
                 })}
 
-                {upcomingRecurring.slice(0, 1).map((rec) => (
-                  <tr key={rec.id}>
+                {activeLoans.slice(0, 1).map((loan) => (
+                  <tr key={loan.id}>
                     <td>
-                      <span className="font-medium">{rec.name}</span>
+                      <span className="font-medium">{loan.loan_name}</span>
                     </td>
                     <td className="num">
-                      {formatDubaiDate(rec.next_due_date)}
+                      {formatDubaiDate(loan.next_payment_due_date)}
                     </td>
-                    <td>
-                      <span className="pill">Scheduled</span>
+                    <td className="n font-semibold">
+                      {formatCurrency(loan.monthly_emi, loan.currency)}
                     </td>
-                    <td className="n font-medium">
-                      {formatCurrency(rec.amount, rec.currency)}
+                    <td className="n">
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const res = await mutateFinance(
+                            "record_loan_payment",
+                            {
+                              payment: {
+                                loan_id: loan.id,
+                                source_account_id:
+                                  loan.linked_account_id ??
+                                  state.accounts[0]?.id ??
+                                  null,
+                                amount: loan.monthly_emi,
+                                payment_date: today,
+                              },
+                            }
+                          );
+                          if (res.ok) {
+                            setQuickPayNotice(
+                              `Paid ${formatCurrency(
+                                loan.monthly_emi
+                              )} EMI for ${loan.loan_name}.`
+                            );
+                          }
+                        }}
+                        className="btn h-7 px-2.5 text-[12px]"
+                      >
+                        Pay EMI
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -544,14 +593,17 @@ export function DashboardView() {
 
           <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-[13px] num">
             <span className="text-[var(--muted)]">
-              Scheduled recurring items are excluded until confirmed
+              Combined debt (Cards + Loans):{" "}
+              <strong className="text-[var(--text)]">
+                {formatCurrency(summary.totalCombinedDebt)}
+              </strong>
             </span>
             <button
               type="button"
-              onClick={() => setActiveSection("budgets")}
+              onClick={() => setActiveSection("cards")}
               className="font-medium text-[var(--text)] hover:underline cursor-pointer"
             >
-              View all {upcomingRecurring.length} schedules →
+              Manage all loans &amp; cards →
             </button>
           </div>
         </section>
@@ -559,10 +611,7 @@ export function DashboardView() {
 
       {/* Row 3: Latest Confirmed Transactions (7 cols) + Spending by Card & OCR Activity (5 cols) */}
       <div className="app-grid">
-        <section
-          className="panel space-y-3"
-          style={{ gridColumn: "span 7" }}
-        >
+        <section className="panel space-y-3" style={{ gridColumn: "span 7" }}>
           <div className="panel-header">
             <h2>
               Latest confirmed transactions ({state.transactions.length} total)
@@ -625,7 +674,7 @@ export function DashboardView() {
 
           <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between text-[13px] num">
             <span className="text-[var(--muted)]">
-              Showing 4 most recent of {state.transactions.length} confirmed
+              Showing 3 most recent of {state.transactions.length} confirmed
               records
             </span>
             <button
@@ -638,10 +687,7 @@ export function DashboardView() {
           </div>
         </section>
 
-        <section
-          className="panel space-y-3"
-          style={{ gridColumn: "span 5" }}
-        >
+        <section className="panel space-y-3" style={{ gridColumn: "span 5" }}>
           <div>
             <div className="panel-header">
               <h2>Spending by card &amp; account</h2>
@@ -697,7 +743,8 @@ export function DashboardView() {
                 </span>
                 <strong className="font-medium">
                   {formatCurrency(
-                    acc.is_manual_balance_verified && acc.manual_balance !== null
+                    acc.is_manual_balance_verified &&
+                      acc.manual_balance !== null
                       ? acc.manual_balance
                       : acc.opening_balance,
                     acc.currency

@@ -38,6 +38,7 @@ yarn-error.log*
 /.data
 /test-results
 /playwright-report
+/.taste-skill
 
 # vercel
 .vercel

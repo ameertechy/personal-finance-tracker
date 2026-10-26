@@ -204,6 +204,48 @@ export const ccRepaymentInputSchema = z.object({
   notes: safeTextSchema(400).nullable().optional(),
 });
 
+export const loanInputSchema = z.object({
+  loan_name: safeTextSchema(120).refine(
+    (v) => v.trim().length >= 2,
+    "Loan name is required"
+  ),
+  lender_name: safeTextSchema(100).refine(
+    (v) => v.trim().length >= 2,
+    "Bank or lender name is required"
+  ),
+  loan_type: z
+    .enum([
+      "personal_loan",
+      "auto_loan",
+      "home_mortgage",
+      "bnpl_installment",
+      "card_installment_plan",
+    ])
+    .default("personal_loan"),
+  currency: z.string().length(3).default("AED"),
+  principal_amount: z.coerce.number().positive("Original loan amount must be > 0"),
+  outstanding_principal: z.coerce.number().min(0),
+  interest_rate_apr: z.coerce.number().min(0).max(100).default(0),
+  monthly_emi: z.coerce.number().positive("Monthly EMI must be > 0"),
+  total_installments: z.coerce.number().int().min(1).max(480).default(36),
+  paid_installments: z.coerce.number().int().min(0).default(0),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  next_payment_due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  due_day_of_month: z.coerce.number().int().min(1).max(31).default(1),
+  linked_account_id: z.string().nullable().optional(),
+  linked_card_id: z.string().nullable().optional(),
+  notes: safeTextSchema(400).nullable().optional(),
+});
+
+export const loanPaymentInputSchema = z.object({
+  loan_id: z.string().min(1, "Target loan is required"),
+  source_account_id: z.string().nullable().optional(),
+  amount: z.coerce.number().positive("Payment amount must be positive"),
+  payment_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  reference_number: safeTextSchema(100).nullable().optional(),
+  notes: safeTextSchema(400).nullable().optional(),
+});
+
 export const budgetInputSchema = z.object({
   month_key: z.string().regex(/^\d{4}-\d{2}$/),
   category_name: z.string().min(1).max(80),

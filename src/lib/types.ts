@@ -339,6 +339,57 @@ export interface CreditCardPaymentRecord {
   updated_at: string;
 }
 
+export type LoanType =
+  | "personal_loan"
+  | "auto_loan"
+  | "home_mortgage"
+  | "bnpl_installment"
+  | "card_installment_plan";
+
+export type LoanStatus = "active" | "overdue" | "paid_off";
+
+export interface LoanRecord {
+  id: string;
+  user_id: string;
+  loan_name: string;
+  lender_name: string;
+  loan_type: LoanType;
+  currency: string;
+  principal_amount: number;
+  outstanding_principal: number;
+  interest_rate_apr: number;
+  monthly_emi: number;
+  total_installments: number;
+  paid_installments: number;
+  remaining_installments: number;
+  start_date: string;
+  next_payment_due_date: string;
+  due_day_of_month: number;
+  linked_account_id: string | null;
+  linked_card_id: string | null;
+  status: LoanStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoanPaymentRecord {
+  id: string;
+  user_id: string;
+  loan_id: string;
+  source_account_id: string | null;
+  linked_transaction_id: string | null;
+  amount: number;
+  principal_component: number;
+  interest_component: number;
+  currency: string;
+  payment_date: string;
+  reference_number: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface NotificationPreferenceRecord {
   id: string;
   user_id: string;
@@ -397,6 +448,8 @@ export interface UserFinancialState {
   recurring: RecurringTransactionRecord[];
   statements: CreditCardStatementRecord[];
   cc_payments: CreditCardPaymentRecord[];
+  loans: LoanRecord[];
+  loan_payments: LoanPaymentRecord[];
   receipts: ReceiptRecord[];
   extraction_jobs: ExtractionJob[];
   notification_preferences: NotificationPreferenceRecord;

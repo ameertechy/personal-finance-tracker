@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import {
   addMoney,
+  applyLoanPayment,
   applyStatementPayment,
   calculateAccountingSummary,
   calculateCardOutstanding,
@@ -459,5 +460,45 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
       receipt: dummyReceipt,
       dataUrl: "data:image/png;base64,iVBORw0KGgo=",
     });
+  });
+
+  it("14. Personal loan EMI payments, remaining principal calculation, and UAE Debt Burden Ratio (DBR)", () => {
+    const state = getUserState("usr_uae_owner_01");
+    expect(state.loans.length).toBeGreaterThanOrEqual(2);
+
+    const personalLoan = state.loans[0];
+    expect(personalLoan.loan_name).toBe("Emirates NBD Personal Loan");
+    expect(personalLoan.outstanding_principal).toBe(72400);
+
+    const applied = applyLoanPayment(personalLoan, personalLoan.monthly_emi);
+    expect(applied.paid_installments).toBe(17);
+    expect(applied.remaining_installments).toBe(19);
+    expect(applied.next_payment_due_date).toBe("2026-12-01");
+    expect(
+      addMoney(applied.principal_component, applied.interest_component)
+    ).toBe(personalLoan.monthly_emi);
+    expect(applied.outstanding_principal).toBe(
+      subtractMoney(personalLoan.outstanding_principal, applied.principal_component)
+    );
+
+    const summary = calculateAccountingSummary({
+      monthKey: "2026-10",
+      monthlySalaryConfigured: 32000,
+      transactions: state.transactions,
+      accounts: state.accounts,
+      cards: state.cards,
+      statements: state.statements,
+      budgets: state.budgets,
+      recurring: state.recurring,
+      loans: state.loans,
+    });
+
+    expect(summary.totalLoansOutstanding).toBe(76000);
+    expect(summary.monthlyLoanEmiTotal).toBe(4140);
+    expect(summary.totalCombinedDebt).toBe(
+      addMoney(summary.totalCreditCardOutstanding, summary.totalLoansOutstanding)
+    );
+    expect(summary.debtBurdenRatioPct).toBeGreaterThan(0);
+    expect(summary.debtBurdenRatioPct).toBeLessThan(50);
   });
 });

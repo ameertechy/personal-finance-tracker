@@ -141,7 +141,10 @@ export function getUserState(userId: string): UserFinancialState {
     });
     persistDb();
   }
-  return db.states[userId];
+  const st = db.states[userId];
+  if (!Array.isArray(st.loans)) st.loans = [];
+  if (!Array.isArray(st.loan_payments)) st.loan_payments = [];
+  return st;
 }
 
 export function saveUserState(

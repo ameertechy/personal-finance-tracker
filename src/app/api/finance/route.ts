@@ -4,6 +4,7 @@ import { getServerSession, SESSION_COOKIE_NAME } from "@/lib/auth-session";
 import { createInitialUserFinancialState } from "@/lib/default-data";
 import { getDubaiMonthKey, getDubaiToday } from "@/lib/dubai-time";
 import {
+  applyLoanPayment,
   applyStatementPayment,
   calculateCategoryBudgets,
   computeDuplicateFingerprint,
@@ -22,6 +23,8 @@ import {
   CreditCardPaymentRecord,
   CreditCardStatementRecord,
   FinancialAccount,
+  LoanPaymentRecord,
+  LoanRecord,
   NotificationItem,
   RecurringTransactionRecord,
   TransactionRecord,
@@ -31,6 +34,8 @@ import {
   cardInputSchema,
   ccRepaymentInputSchema,
   financialAccountInputSchema,
+  loanInputSchema,
+  loanPaymentInputSchema,
   recurringInputSchema,
   statementInputSchema,
   transactionInputSchema,
@@ -942,6 +947,200 @@ export async function POST(req: NextRequest) {
           ...n,
           is_read: true,
         })),
+      }));
+      return NextResponse.json({ ok: true, state: updatedState });
+    }
+
+    // 11b. Create Loan (Personal Loan, Auto Loan, Mortgage, BNPL, or 0% Card Installment Plan)
+    if (action === "create_loan") {
+      const parsed = loanInputSchema.safeParse(body.loan);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: parsed.error.issues.map((i) => i.message).join("; ") },
+          { status: 400 }
+        );
+      }
+      const d = parsed.data;
+      const remainingCount = Math.max(
+        0,
+        d.total_installments - d.paid_installments
+      );
+
+      const newLoan: LoanRecord = {
+        id: `loan_${crypto.randomBytes(6).toString("hex")}`,
+        user_id: userId,
+        loan_name: d.loan_name.trim(),
+        lender_name: d.lender_name.trim(),
+        loan_type: d.loan_type,
+        currency: d.currency,
+        principal_amount: fromFils(toFils(d.principal_amount)),
+        outstanding_principal: fromFils(toFils(d.outstanding_principal)),
+        interest_rate_apr: d.interest_rate_apr,
+        monthly_emi: fromFils(toFils(d.monthly_emi)),
+        total_installments: d.total_installments,
+        paid_installments: d.paid_installments,
+        remaining_installments: remainingCount,
+        start_date: d.start_date,
+        next_payment_due_date: d.next_payment_due_date,
+        due_day_of_month: d.due_day_of_month,
+        linked_account_id: d.linked_account_id ?? null,
+        linked_card_id: d.linked_card_id ?? null,
+        status:
+          fromFils(toFils(d.outstanding_principal)) === 0
+            ? "paid_off"
+            : "active",
+        notes: d.notes ?? null,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+
+      const updatedState = saveUserState(userId, (curr) => ({
+        ...curr,
+        loans: [newLoan, ...(curr.loans || [])],
+        audit_logs: [
+          {
+            id: `aud_${crypto.randomBytes(5).toString("hex")}`,
+            user_id: userId,
+            entity_type: "loan",
+            entity_id: newLoan.id,
+            action: "create" as const,
+            summary: `Registered ${newLoan.loan_name} (${newLoan.lender_name}, EMI ${newLoan.currency} ${newLoan.monthly_emi.toFixed(2)})`,
+            created_at: nowIso,
+          },
+          ...curr.audit_logs,
+        ],
+      }));
+
+      return NextResponse.json({ ok: true, state: updatedState });
+    }
+
+    // 11c. Record Loan EMI / Installment Payment
+    if (action === "record_loan_payment") {
+      const parsed = loanPaymentInputSchema.safeParse(body.payment);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: parsed.error.issues.map((i) => i.message).join("; ") },
+          { status: 400 }
+        );
+      }
+      const d = parsed.data;
+
+      const updatedState = saveUserState(userId, (curr) => {
+        const targetLoan = (curr.loans || []).find(
+          (l) => l.id === d.loan_id && l.user_id === userId
+        );
+        if (!targetLoan) return curr;
+
+        const applied = applyLoanPayment(targetLoan, d.amount);
+        const txId = `tx_${crypto.randomBytes(6).toString("hex")}`;
+
+        const loanTx: TransactionRecord = {
+          id: txId,
+          user_id: userId,
+          transaction_type: "expense",
+          status: "confirmed",
+          verification_status: "verified",
+          entry_source: "manual",
+          amount: fromFils(toFils(d.amount)),
+          currency: targetLoan.currency || "AED",
+          vat_amount: 0,
+          merchant: `Loan EMI · ${targetLoan.loan_name}`,
+          merchant_location: "UAE",
+          category_id:
+            curr.categories.find((c) => c.name === "Loan & EMI Repayment")
+              ?.id ?? null,
+          category_name: "Loan & EMI Repayment",
+          subcategory_name: targetLoan.loan_type,
+          transaction_date: d.payment_date,
+          transaction_time: "09:00",
+          occurred_at: nowIso,
+          payment_method: "bank_transfer",
+          account_id: d.source_account_id ?? targetLoan.linked_account_id,
+          card_id: targetLoan.linked_card_id,
+          target_card_id: null,
+          target_account_id: null,
+          reference_number:
+            d.reference_number ||
+            `EMI-${targetLoan.id.slice(-4).toUpperCase()}-${d.payment_date.replace(/-/g, "")}`,
+          receipt_id: null,
+          extraction_job_id: null,
+          income_kind: null,
+          tags: ["loan-emi", targetLoan.loan_type],
+          line_items: [],
+          notes:
+            d.notes ||
+            `Installment ${applied.paid_installments} of ${targetLoan.total_installments} (Principal: AED ${applied.principal_component.toFixed(2)}, Interest: AED ${applied.interest_component.toFixed(2)})`,
+          duplicate_fingerprint: computeDuplicateFingerprint({
+            merchant: `Loan EMI · ${targetLoan.loan_name}`,
+            amount: d.amount,
+            transaction_date: d.payment_date,
+            transaction_type: "expense",
+            reference_number: d.reference_number,
+          }),
+          created_at: nowIso,
+          updated_at: nowIso,
+        };
+
+        const paymentRecord: LoanPaymentRecord = {
+          id: `lnpay_${crypto.randomBytes(6).toString("hex")}`,
+          user_id: userId,
+          loan_id: targetLoan.id,
+          source_account_id:
+            d.source_account_id ?? targetLoan.linked_account_id,
+          linked_transaction_id: txId,
+          amount: fromFils(toFils(d.amount)),
+          principal_component: applied.principal_component,
+          interest_component: applied.interest_component,
+          currency: targetLoan.currency || "AED",
+          payment_date: d.payment_date,
+          reference_number: loanTx.reference_number,
+          notes: loanTx.notes,
+          created_at: nowIso,
+          updated_at: nowIso,
+        };
+
+        return {
+          ...curr,
+          transactions: [loanTx, ...curr.transactions],
+          loans: (curr.loans || []).map((l) =>
+            l.id === targetLoan.id
+              ? {
+                  ...l,
+                  outstanding_principal: applied.outstanding_principal,
+                  paid_installments: applied.paid_installments,
+                  remaining_installments: applied.remaining_installments,
+                  next_payment_due_date: applied.next_payment_due_date,
+                  status: applied.status,
+                  updated_at: nowIso,
+                }
+              : l
+          ),
+          loan_payments: [paymentRecord, ...(curr.loan_payments || [])],
+          audit_logs: [
+            {
+              id: `aud_${crypto.randomBytes(5).toString("hex")}`,
+              user_id: userId,
+              entity_type: "loan_payment",
+              entity_id: paymentRecord.id,
+              action: "repayment" as const,
+              summary: `Paid AED ${paymentRecord.amount.toFixed(2)} EMI for ${targetLoan.loan_name} (${applied.remaining_installments} installments left)`,
+              created_at: nowIso,
+            },
+            ...curr.audit_logs,
+          ],
+        };
+      });
+
+      return NextResponse.json({ ok: true, state: updatedState });
+    }
+
+    if (action === "delete_loan") {
+      const loanId = String(body.id || "");
+      const updatedState = saveUserState(userId, (curr) => ({
+        ...curr,
+        loans: (curr.loans || []).filter(
+          (l) => !(l.id === loanId && l.user_id === userId)
+        ),
       }));
       return NextResponse.json({ ok: true, state: updatedState });
     }

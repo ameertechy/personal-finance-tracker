@@ -4,6 +4,7 @@ import {
   CreditCardPaymentRecord,
   CreditCardStatementRecord,
   FinancialAccount,
+  LoanRecord,
   RecurringTransactionRecord,
   TransactionRecord,
 } from "./types";
@@ -116,6 +117,10 @@ export interface AccountingSummary {
   totalCreditCardOutstanding: number;
   totalCreditLimit: number;
   overallCardUtilizationPct: number;
+  totalLoansOutstanding: number;
+  monthlyLoanEmiTotal: number;
+  totalCombinedDebt: number;
+  debtBurdenRatioPct: number;
   monthlySavings: number;
   savingsRatePct: number;
   hasVerifiedBankBalance: boolean;
@@ -147,6 +152,7 @@ export function calculateAccountingSummary(params: {
   statements: CreditCardStatementRecord[];
   budgets: BudgetRecord[];
   recurring: RecurringTransactionRecord[];
+  loans?: LoanRecord[];
 }): AccountingSummary {
   const {
     monthKey,
@@ -156,6 +162,7 @@ export function calculateAccountingSummary(params: {
     cards,
     statements,
     budgets,
+    loans = [],
   } = params;
 
   const monthTx = transactions.filter(
@@ -261,6 +268,34 @@ export function calculateAccountingSummary(params: {
     )
     .reduce((acc, s) => acc + toFils(s.outstanding_balance), 0);
 
+  // Personal loans, auto loans, mortgages, and BNPL installments
+  const activeLoans = loans.filter((l) => l.status !== "paid_off");
+  const totalLoansOutstandingFils = activeLoans.reduce(
+    (acc, l) => acc + toFils(l.outstanding_principal),
+    0
+  );
+  const monthlyLoanEmiTotalFils = activeLoans.reduce(
+    (acc, l) => acc + toFils(l.monthly_emi),
+    0
+  );
+  const totalCombinedDebtFils =
+    totalCreditCardOutstandingFils + totalLoansOutstandingFils;
+
+  // UAE Central Bank Debt Burden Ratio (DBR): Monthly loan EMIs + unpaid statement minimums vs monthly income
+  const unpaidCardMinFils = statements
+    .filter((s) => s.status !== "paid")
+    .reduce((acc, s) => acc + toFils(s.minimum_payment), 0);
+  const debtBurdenRatioPct =
+    effectiveIncomeFils > 0
+      ? Number(
+          (
+            ((monthlyLoanEmiTotalFils + unpaidCardMinFils) /
+              effectiveIncomeFils) *
+            100
+          ).toFixed(1)
+        )
+      : 0;
+
   // Estimated available funds = opening funds + recorded income - net expenses - unpaid prior obligations
   const estimatedAvailableFundsFils =
     openingFundsFils +
@@ -294,6 +329,10 @@ export function calculateAccountingSummary(params: {
     totalCreditCardOutstanding: fromFils(totalCreditCardOutstandingFils),
     totalCreditLimit: fromFils(totalCreditLimitFils),
     overallCardUtilizationPct,
+    totalLoansOutstanding: fromFils(totalLoansOutstandingFils),
+    monthlyLoanEmiTotal: fromFils(monthlyLoanEmiTotalFils),
+    totalCombinedDebt: fromFils(totalCombinedDebtFils),
+    debtBurdenRatioPct,
     monthlySavings: fromFils(savingsFils),
     savingsRatePct,
     hasVerifiedBankBalance,
@@ -374,6 +413,58 @@ export function applyStatementPayment(
     amount_paid: fromFils(totalPaidFils),
     outstanding_balance: fromFils(remainingFils),
     status,
+  };
+}
+
+/**
+ * Applies a monthly EMI or lump-sum payment against a personal/auto/BNPL loan.
+ * Calculates monthly interest portion vs principal reduction, advances next due date,
+ * and updates remaining installments.
+ */
+export function applyLoanPayment(
+  loan: LoanRecord,
+  paymentAmount: number
+): {
+  outstanding_principal: number;
+  paid_installments: number;
+  remaining_installments: number;
+  next_payment_due_date: string;
+  status: LoanRecord["status"];
+  principal_component: number;
+  interest_component: number;
+} {
+  const payFils = toFils(paymentAmount);
+  const currentPrincipalFils = toFils(loan.outstanding_principal);
+  const monthlyRate = (loan.interest_rate_apr || 0) / 100 / 12;
+  const interestFils = Math.min(
+    payFils,
+    Math.round(currentPrincipalFils * monthlyRate)
+  );
+  const principalReductionFils = Math.max(0, payFils - interestFils);
+  const nextOutstandingFils = Math.max(
+    0,
+    currentPrincipalFils - principalReductionFils
+  );
+
+  const nextPaidCount = loan.paid_installments + 1;
+  const nextRemainingCount =
+    nextOutstandingFils === 0
+      ? 0
+      : Math.max(0, loan.total_installments - nextPaidCount);
+
+  const [y, m, d] = loan.next_payment_due_date.split("-").map(Number);
+  const nextDt = new Date(Date.UTC(y, m - 1, d));
+  nextDt.setUTCMonth(nextDt.getUTCMonth() + 1);
+  const nextDueDate = nextDt.toISOString().slice(0, 10);
+
+  return {
+    outstanding_principal: fromFils(nextOutstandingFils),
+    paid_installments: nextPaidCount,
+    remaining_installments: nextRemainingCount,
+    next_payment_due_date: nextDueDate,
+    status: nextOutstandingFils === 0 ? "paid_off" : "active",
+    principal_component: fromFils(principalReductionFils),
+    interest_component: fromFils(interestFils),
   };
 }
 

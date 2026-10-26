@@ -56,8 +56,21 @@ test.describe("DirhamPulse UAE Personal Finance Portal E2E Workflows", () => {
     await expect(page.locator("table")).toContainText("Spinneys Meydan Dubai");
     await expect(page.locator("table")).toContainText("AED 140.25");
 
-    // 6. Navigate to Cards & Bills and record a partial credit card repayment
+    // 6. Navigate to Cards, Personal Loans & Debt Center, add a loan, and record repayments
     await page.getByTestId("nav-cards").click();
+    await expect(page.getByTestId("kpi-total-combined-debt")).toContainText("AED");
+    await expect(page.getByTestId("kpi-loans-outstanding")).toContainText("AED 76,000.00");
+
+    await page.getByTestId("open-add-loan-btn").click();
+    await page.getByTestId("loan-name-input").fill("ADCB Auto Loan");
+    await page.getByTestId("loan-lender-input").fill("ADCB");
+    await page.getByTestId("loan-emi-input").fill("1850.00");
+    await page.getByTestId("loan-principal-input").fill("60000.00");
+    await page.getByTestId("submit-new-loan-btn").click();
+    await expect(page.getByTestId("cards-feedback-banner")).toContainText(
+      "ADCB Auto Loan"
+    );
+
     await page.getByTestId("repayment-amount-input").fill("500.00");
     await page.getByTestId("submit-cc-repayment-btn").click();
     await expect(page.getByTestId("cards-feedback-banner")).toContainText(
