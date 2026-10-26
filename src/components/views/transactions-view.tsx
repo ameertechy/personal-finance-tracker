@@ -2,9 +2,6 @@
 
 import React, { useMemo, useState } from "react";
 import {
-  Search,
-  Filter,
-  ArrowUpDown,
   Download,
   Trash2,
   Edit3,
@@ -13,8 +10,6 @@ import {
   Square,
   X,
   Lock,
-  ExternalLink,
-  AlertCircle,
 } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
 import { formatCurrency } from "@/lib/money";
@@ -22,7 +17,7 @@ import { formatDubaiDate } from "@/lib/dubai-time";
 import { TransactionRecord, TransactionType } from "@/lib/types";
 
 export function TransactionsView() {
-  const { state, mutateFinance, theme } = useFinance();
+  const { state, mutateFinance } = useFinance();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -32,7 +27,9 @@ export function TransactionsView() {
   const [dateTo, setDateTo] = useState("");
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
-  const [sortBy, setSortBy] = useState<"date_desc" | "date_asc" | "amount_desc" | "amount_asc">("date_desc");
+  const [sortBy, setSortBy] = useState<
+    "date_desc" | "date_asc" | "amount_desc" | "amount_asc"
+  >("date_desc");
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingTx, setEditingTx] = useState<TransactionRecord | null>(null);
@@ -55,9 +52,16 @@ export function TransactionsView() {
         if (q) {
           const matchesMerchant = tx.merchant.toLowerCase().includes(q);
           const matchesNotes = (tx.notes || "").toLowerCase().includes(q);
-          const matchesRef = (tx.reference_number || "").toLowerCase().includes(q);
+          const matchesRef = (tx.reference_number || "")
+            .toLowerCase()
+            .includes(q);
           const matchesAmount = String(tx.amount).includes(q);
-          if (!matchesMerchant && !matchesNotes && !matchesRef && !matchesAmount) {
+          if (
+            !matchesMerchant &&
+            !matchesNotes &&
+            !matchesRef &&
+            !matchesAmount
+          ) {
             return false;
           }
         }
@@ -248,20 +252,14 @@ export function TransactionsView() {
     setSelectedIds([]);
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
-
   return (
-    <div className="space-y-5">
-      {/* Header & Bulk Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="title-row">
         <div>
-          <h2 className="text-lg font-bold">Searchable Transaction Ledger</h2>
-          <p className="text-xs text-slate-400">
-            Showing {filteredTransactions.length} of {state.transactions.length}{" "}
-            confirmed &amp; pending records
+          <h1>Transactions</h1>
+          <p className="sub">
+            Showing 1–{filteredTransactions.length} of{" "}
+            {state.transactions.length} ledger records in Asia/Dubai (GST)
           </p>
         </div>
 
@@ -270,17 +268,17 @@ export function TransactionsView() {
             <button
               type="button"
               onClick={handleBulkDelete}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs font-semibold hover:bg-rose-600/30 cursor-pointer"
+              className="btn danger"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>Delete Selected ({selectedIds.length})</span>
+              <span>Delete selected ({selectedIds.length})</span>
             </button>
           )}
           <button
             type="button"
             data-testid="export-csv-btn"
             onClick={handleExportCsv}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
             <Download className="h-3.5 w-3.5" />
             <span>
@@ -291,81 +289,67 @@ export function TransactionsView() {
         </div>
       </div>
 
-      {/* Search & Filters Bar */}
-      <div className={`p-4 rounded-2xl border ${cardClass} space-y-3`}>
+      {/* Filter Bar */}
+      <div className="panel space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="relative">
-            <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              data-testid="ledger-search-input"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search merchant, notes, ref, amount..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs focus:outline-none focus:border-teal-500"
-            />
-          </div>
+          <input
+            type="text"
+            data-testid="ledger-search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search merchant, notes, ref, amount..."
+            className="input-control"
+          />
 
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-slate-400 shrink-0" />
-            <select
-              aria-label="Filter by Category"
-              value={filterCategory}
-              onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs focus:outline-none focus:border-teal-500"
-            >
-              <option value="all">All Categories</option>
-              {state.categories.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            aria-label="Filter by Category"
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="input-control"
+          >
+            <option value="all">All categories</option>
+            {state.categories.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
 
-          <div>
-            <select
-              aria-label="Filter by Transaction Type"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs focus:outline-none focus:border-teal-500"
-            >
-              <option value="all">All Transaction Types</option>
-              <option value="expense">Expense</option>
-              <option value="income">Income / Salary</option>
-              <option value="cc_repayment">Credit Card Repayment</option>
-              <option value="refund">Refund / Reversal</option>
-              <option value="transfer">Transfer</option>
-            </select>
-          </div>
+          <select
+            aria-label="Filter by Transaction Type"
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="input-control"
+          >
+            <option value="all">All transaction types</option>
+            <option value="expense">Expense</option>
+            <option value="income">Income / Salary</option>
+            <option value="cc_repayment">Credit card repayment</option>
+            <option value="refund">Refund / Reversal</option>
+            <option value="transfer">Transfer</option>
+          </select>
 
-          <div className="flex items-center gap-2">
-            <ArrowUpDown className="h-4 w-4 text-slate-400 shrink-0" />
-            <select
-              aria-label="Sort Transactions"
-              value={sortBy}
-              onChange={(e) =>
-                setSortBy(e.target.value as typeof sortBy)
-              }
-              className="w-full px-3 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs focus:outline-none focus:border-teal-500"
-            >
-              <option value="date_desc">Newest First</option>
-              <option value="date_asc">Oldest First</option>
-              <option value="amount_desc">Highest Amount</option>
-              <option value="amount_asc">Lowest Amount</option>
-            </select>
-          </div>
+          <select
+            aria-label="Sort Transactions"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+            className="input-control"
+          >
+            <option value="date_desc">Newest first</option>
+            <option value="date_asc">Oldest first</option>
+            <option value="amount_desc">Highest amount</option>
+            <option value="amount_asc">Lowest amount</option>
+          </select>
         </div>
 
-        {/* Secondary Filter Row: Card/Account, Date Range, Amount Range */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 border-t border-slate-800/50 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 pt-2 border-t border-[var(--border)]">
           <select
             aria-label="Filter by Card or Account"
             value={filterCardOrAccount}
             onChange={(e) => setFilterCardOrAccount(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs"
+            className="input-control"
           >
-            <option value="all">All Cards &amp; Accounts</option>
+            <option value="all">All cards &amp; accounts</option>
             {state.cards.map((c) => (
               <option key={c.id} value={c.id}>
                 Card: {c.display_name} (••{c.last_four})
@@ -383,46 +367,45 @@ export function TransactionsView() {
             aria-label="Date From"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs"
+            className="input-control"
           />
           <input
             type="date"
             aria-label="Date To"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs"
+            className="input-control"
           />
           <input
             type="number"
             placeholder="Min AED"
             value={minAmount}
             onChange={(e) => setMinAmount(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs"
+            className="input-control"
           />
           <input
             type="number"
             placeholder="Max AED"
             value={maxAmount}
             onChange={(e) => setMaxAmount(e.target.value)}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs"
+            className="input-control"
           />
         </div>
       </div>
 
       {receiptError && (
-        <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-700 text-xs text-rose-200 flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{receiptError}</span>
+        <div className="p-3 rounded-[6px] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)] text-[13px]">
+          {receiptError}
         </div>
       )}
 
-      {/* Transactions Table */}
-      <div className={`rounded-2xl border overflow-hidden ${cardClass}`}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+      {/* Ledger Table */}
+      <div className="panel p-0 overflow-hidden">
+        <div className="table-wrap">
+          <table className="ledger-table">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-950/40 text-slate-400 uppercase text-[10px] tracking-wider">
-                <th className="p-3 w-8">
+              <tr>
+                <th className="w-9">
                   <button
                     type="button"
                     onClick={toggleSelectAll}
@@ -431,25 +414,28 @@ export function TransactionsView() {
                   >
                     {selectedIds.length > 0 &&
                     selectedIds.length === filteredTransactions.length ? (
-                      <CheckSquare className="h-4 w-4 text-teal-400" />
+                      <CheckSquare className="h-4 w-4 text-[var(--text)]" />
                     ) : (
-                      <Square className="h-4 w-4" />
+                      <Square className="h-4 w-4 text-[var(--muted)]" />
                     )}
                   </button>
                 </th>
-                <th className="p-3">Date &amp; Time (GST)</th>
-                <th className="p-3">Merchant &amp; Notes</th>
-                <th className="p-3">Category</th>
-                <th className="p-3">Card / Account</th>
-                <th className="p-3">Source &amp; Status</th>
-                <th className="p-3 text-right">Amount</th>
-                <th className="p-3 text-right">Actions</th>
+                <th>Merchant &amp; notes</th>
+                <th>Category</th>
+                <th>Card / account</th>
+                <th>Source &amp; status</th>
+                <th className="n">Date (GST)</th>
+                <th className="n">Amount</th>
+                <th className="n">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody>
               {filteredTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-400">
+                  <td
+                    colSpan={8}
+                    className="py-8 text-center text-[var(--muted)]"
+                  >
                     No transactions match your current filter criteria.
                   </td>
                 </tr>
@@ -465,48 +451,31 @@ export function TransactionsView() {
                     <tr
                       key={tx.id}
                       data-testid={`tx-row-${tx.id}`}
-                      className={`hover:bg-slate-800/30 transition ${
-                        isSelected ? "bg-teal-950/20" : ""
-                      }`}
+                      aria-selected={isSelected}
                     >
-                      <td className="p-3">
+                      <td>
                         <button
                           type="button"
                           onClick={() => toggleSelect(tx.id)}
                           className="cursor-pointer"
                         >
                           {isSelected ? (
-                            <CheckSquare className="h-4 w-4 text-teal-400" />
+                            <CheckSquare className="h-4 w-4 text-[var(--text)]" />
                           ) : (
-                            <Square className="h-4 w-4 text-slate-500" />
+                            <Square className="h-4 w-4 text-[var(--muted)]" />
                           )}
                         </button>
                       </td>
-                      <td className="p-3 whitespace-nowrap">
-                        <div className="font-medium">
-                          {formatDubaiDate(tx.transaction_date)}
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          {tx.transaction_time || "—"} •{" "}
-                          {tx.reference_number || "No ref"}
-                        </div>
-                      </td>
-                      <td className="p-3 max-w-xs">
-                        <div className="font-semibold truncate">
-                          {tx.merchant}
-                        </div>
+                      <td>
+                        <div className="font-medium">{tx.merchant}</div>
                         {tx.notes && (
-                          <div className="text-[11px] text-slate-400 truncate">
+                          <div className="text-[12px] text-[var(--muted)]">
                             {tx.notes}
                           </div>
                         )}
                       </td>
-                      <td className="p-3 whitespace-nowrap">
-                        <span className="px-2 py-1 rounded-lg bg-slate-800/80 text-slate-200 text-[11px]">
-                          {tx.category_name}
-                        </span>
-                      </td>
-                      <td className="p-3 whitespace-nowrap text-[11px]">
+                      <td>{tx.category_name}</td>
+                      <td className="text-[var(--muted)]">
                         {card ? (
                           <span>
                             {card.display_name} (••{card.last_four})
@@ -514,34 +483,33 @@ export function TransactionsView() {
                         ) : account ? (
                           <span>{account.display_name}</span>
                         ) : (
-                          <span className="text-slate-400">
-                            {tx.payment_method.replace(/_/g, " ")}
-                          </span>
+                          <span>{tx.payment_method.replace(/_/g, " ")}</span>
                         )}
                       </td>
-                      <td className="p-3 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">
-                            {tx.entry_source.replace("_", " ")}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-medium ${
-                              tx.verification_status === "verified"
-                                ? "bg-emerald-500/15 text-emerald-300"
-                                : "bg-amber-500/15 text-amber-300"
-                            }`}
-                          >
-                            {tx.verification_status}
-                          </span>
+                      <td>
+                        <span
+                          className={`pill ${
+                            tx.verification_status === "verified"
+                              ? "pos"
+                              : "warn"
+                          }`}
+                        >
+                          {tx.entry_source.replace("_", " ")} ·{" "}
+                          {tx.verification_status}
+                        </span>
+                      </td>
+                      <td className="n">
+                        <div>{formatDubaiDate(tx.transaction_date)}</div>
+                        <div className="text-[12px] text-[var(--muted)]">
+                          {tx.transaction_time || "-"} ·{" "}
+                          <code>{tx.reference_number || "-"}</code>
                         </div>
                       </td>
                       <td
-                        className={`p-3 whitespace-nowrap text-right font-bold ${
+                        className={`n font-semibold ${
                           tx.transaction_type === "income" ||
                           tx.transaction_type === "refund"
-                            ? "text-emerald-400"
-                            : tx.transaction_type === "cc_repayment"
-                            ? "text-sky-400"
+                            ? "text-[var(--positive)]"
                             : ""
                         }`}
                       >
@@ -553,12 +521,12 @@ export function TransactionsView() {
                           {formatCurrency(tx.amount, tx.currency)}
                         </div>
                         {tx.vat_amount ? (
-                          <div className="text-[10px] text-slate-400 font-normal">
-                            Incl. VAT {formatCurrency(tx.vat_amount, tx.currency)}
+                          <div className="text-[12px] text-[var(--muted)] font-normal">
+                            VAT {formatCurrency(tx.vat_amount, tx.currency)}
                           </div>
                         ) : null}
                       </td>
-                      <td className="p-3 whitespace-nowrap text-right">
+                      <td className="n">
                         <div className="inline-flex items-center gap-1.5">
                           {tx.receipt_id && (
                             <button
@@ -566,7 +534,7 @@ export function TransactionsView() {
                               title="View Private Receipt (Signed URL)"
                               data-testid={`view-receipt-btn-${tx.id}`}
                               onClick={() => handleOpenReceipt(tx.receipt_id!)}
-                              className="p-1.5 rounded-lg bg-teal-500/15 text-teal-400 hover:bg-teal-500/25 cursor-pointer"
+                              className="btn h-7 px-2 text-[12px]"
                             >
                               <Receipt className="h-3.5 w-3.5" />
                             </button>
@@ -576,7 +544,7 @@ export function TransactionsView() {
                             title="Edit Transaction"
                             data-testid={`edit-tx-btn-${tx.id}`}
                             onClick={() => setEditingTx(tx)}
-                            className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white cursor-pointer"
+                            className="btn h-7 px-2 text-[12px]"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </button>
@@ -585,7 +553,7 @@ export function TransactionsView() {
                             title="Delete Transaction"
                             data-testid={`delete-tx-btn-${tx.id}`}
                             onClick={() => setDeletingTxId(tx.id)}
-                            className="p-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:bg-rose-900/60 cursor-pointer"
+                            className="btn danger h-7 px-2 text-[12px]"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -602,22 +570,21 @@ export function TransactionsView() {
 
       {/* Delete Confirmation Dialog */}
       {deletingTxId && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4 text-slate-100">
-            <h3 className="text-base font-bold">Confirm Transaction Deletion</h3>
-            <p className="text-xs text-slate-300">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="w-full max-w-md panel space-y-4">
+            <h2 className="text-[16px] font-semibold">
+              Confirm transaction deletion
+            </h2>
+            <p className="text-[13px] text-[var(--muted)]">
               Are you sure you want to permanently remove this transaction?
-              Stored receipts will follow your configured retention policy (
-              <code className="text-teal-300">
-                {state.profile.receipt_retention_policy}
-              </code>
-              ).
+              Stored receipts follow your configured retention policy (
+              <code>{state.profile.receipt_retention_policy}</code>).
             </p>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setDeletingTxId(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-medium cursor-pointer"
+                className="btn"
               >
                 Cancel
               </button>
@@ -625,9 +592,9 @@ export function TransactionsView() {
                 type="button"
                 data-testid="confirm-delete-tx-btn"
                 onClick={() => handleConfirmDelete(deletingTxId)}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold cursor-pointer"
+                className="btn danger"
               >
-                Confirm Delete
+                Confirm delete
               </button>
             </div>
           </div>
@@ -636,25 +603,27 @@ export function TransactionsView() {
 
       {/* Edit Transaction Modal */}
       {editingTx && (
-        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <form
             onSubmit={handleSaveEdit}
-            className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4 text-slate-100"
+            className="w-full max-w-lg panel space-y-4"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold">Edit Transaction</h3>
+              <h2 className="text-[16px] font-semibold">Edit transaction</h2>
               <button
                 type="button"
                 onClick={() => setEditingTx(null)}
-                className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                className="btn h-8 px-2"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div>
-                <label className="block text-slate-400 mb-1">Merchant</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Merchant
+                </label>
                 <input
                   type="text"
                   required
@@ -662,11 +631,11 @@ export function TransactionsView() {
                   onChange={(e) =>
                     setEditingTx({ ...editingTx, merchant: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 />
               </div>
-              <div>
-                <label className="block text-slate-400 mb-1">
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
                   Amount ({editingTx.currency})
                 </label>
                 <input
@@ -680,11 +649,13 @@ export function TransactionsView() {
                       amount: Number(e.target.value),
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 />
               </div>
-              <div>
-                <label className="block text-slate-400 mb-1">Category</label>
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Category
+                </label>
                 <select
                   value={editingTx.category_name}
                   onChange={(e) =>
@@ -693,7 +664,7 @@ export function TransactionsView() {
                       category_name: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 >
                   {state.categories.map((c) => (
                     <option key={c.id} value={c.name}>
@@ -702,9 +673,9 @@ export function TransactionsView() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-slate-400 mb-1">
-                  Transaction Type
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Transaction type
                 </label>
                 <select
                   value={editingTx.transaction_type}
@@ -714,7 +685,7 @@ export function TransactionsView() {
                       transaction_type: e.target.value as TransactionType,
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 >
                   <option value="expense">Expense</option>
                   <option value="income">Income</option>
@@ -723,8 +694,8 @@ export function TransactionsView() {
                   <option value="transfer">Transfer</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-slate-400 mb-1">Date</label>
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">Date</label>
                 <input
                   type="date"
                   value={editingTx.transaction_date}
@@ -734,18 +705,18 @@ export function TransactionsView() {
                       transaction_date: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 />
               </div>
-              <div>
-                <label className="block text-slate-400 mb-1">Notes</label>
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">Notes</label>
                 <input
                   type="text"
                   value={editingTx.notes || ""}
                   onChange={(e) =>
                     setEditingTx({ ...editingTx, notes: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                  className="input-control"
                 />
               </div>
             </div>
@@ -754,16 +725,16 @@ export function TransactionsView() {
               <button
                 type="button"
                 onClick={() => setEditingTx(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-medium cursor-pointer"
+                className="btn"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 data-testid="save-edit-tx-btn"
-                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+                className="btn primary"
               >
-                Save Changes
+                Save changes
               </button>
             </div>
           </form>
@@ -772,52 +743,49 @@ export function TransactionsView() {
 
       {/* Private Signed Receipt Viewer Modal */}
       {viewingReceipt && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4 text-slate-100">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+          <div className="w-full max-w-lg panel space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-teal-400" />
+                <Lock className="h-4 w-4" />
                 <div>
-                  <h3 className="text-sm font-bold">
-                    Private Receipt Vault — {viewingReceipt.fileName}
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Short-lived HMAC signed URL • Verified RLS Owner Access
+                  <h2 className="text-[15px] font-semibold">
+                    Private receipt vault · {viewingReceipt.fileName}
+                  </h2>
+                  <p className="text-[12px] text-[var(--muted)]">
+                    Short-lived HMAC signed URL · Verified RLS owner access
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setViewingReceipt(null)}
-                className="p-1 text-slate-400 hover:text-white cursor-pointer"
+                className="btn h-8 px-2"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {viewingReceipt.dataUrl ? (
-              <div className="bg-slate-950 rounded-xl p-3 flex justify-center max-h-[65vh] overflow-auto border border-slate-800">
+              <div className="bg-[var(--raised)] rounded p-3 flex justify-center max-h-[65vh] overflow-auto border border-[var(--border)]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={viewingReceipt.dataUrl}
                   alt={viewingReceipt.fileName}
-                  className="max-h-[58vh] object-contain rounded"
+                  className="max-h-[56vh] object-contain"
                 />
               </div>
             ) : (
-              <p className="text-xs text-slate-400 py-6 text-center">
-                Receipt metadata verified (No preview binary attached).
+              <p className="text-[13px] text-[var(--muted)] py-6 text-center">
+                Receipt metadata verified.
               </p>
             )}
 
-            <div className="flex items-center justify-between text-[11px] text-slate-400">
+            <div className="flex items-center justify-between text-[12px] text-[var(--muted)]">
               <span className="truncate max-w-xs">
                 Signed URL: <code>{viewingReceipt.signedUrl}</code>
               </span>
-              <span className="inline-flex items-center gap-1 text-teal-400">
-                <ExternalLink className="h-3 w-3" />
-                <span>Expires in 5m</span>
-              </span>
+              <span>Expires in 5m</span>
             </div>
           </div>
         </div>

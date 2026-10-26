@@ -1,22 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  User,
-  Bell,
-  Shield,
-  Download,
-  Trash2,
-  RefreshCw,
-  CheckCircle2,
-  History,
-} from "lucide-react";
+import { Download, Trash2, RefreshCw } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
 import { formatDubaiDate } from "@/lib/dubai-time";
 import { ReceiptRetentionPolicy } from "@/lib/types";
 
 export function SettingsView() {
-  const { state, mutateFinance, theme } = useFinance();
+  const { state, mutateFinance } = useFinance();
 
   const [fullName, setFullName] = useState(
     state?.profile.full_name || "UAE Resident"
@@ -111,295 +102,361 @@ export function SettingsView() {
     URL.revokeObjectURL(url);
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
-
   return (
     <div className="space-y-6">
+      <div className="title-row">
+        <div>
+          <h1>Settings, Retention Policies &amp; Data Portability</h1>
+          <p className="sub">
+            Configure regional preferences ({currency} · {timezone}), receipt
+            retention behavior, notification intervals, and full JSON vault
+            export.
+          </p>
+        </div>
+      </div>
+
       {savedBanner && (
         <div
           role="status"
           data-testid="settings-saved-banner"
-          className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-700 text-emerald-200 text-xs flex items-center gap-2"
+          className="p-3.5 rounded-[6px] bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)] text-[13px]"
         >
-          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span>{savedBanner}</span>
+          {savedBanner}
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Profile, Currency, Timezone & Receipt Retention */}
+      {/* Section 1: Two-Column Settings Row (Label Column + Panel) */}
+      <div className="app-grid top pt-2 border-t border-[var(--border)]">
+        <div className="space-y-2" style={{ gridColumn: "span 5" }}>
+          <h2 className="text-[16px] font-medium">
+            Profile, currency &amp; receipt retention
+          </h2>
+          <p className="text-[14px] text-[var(--muted)]">
+            Controls how dates are formatted in {timezone} and what happens to
+            private receipt storage objects when a linked transaction is
+            deleted.
+          </p>
+          <div className="p-3 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] text-[12px] space-y-1">
+            <div className="font-medium">Current active configuration</div>
+            <div className="text-[var(--muted)]">
+              Owner: {state.profile.full_name} · {state.profile.default_currency}{" "}
+              · {state.profile.timezone}
+            </div>
+            <div className="text-[var(--muted)]">
+              Retention policy:{" "}
+              <code>{state.profile.receipt_retention_policy}</code> (
+              {state.receipts.length} stored receipt object(s))
+            </div>
+          </div>
+        </div>
+
         <form
           onSubmit={handleSaveProfile}
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
+          style={{ gridColumn: "span 7" }}
         >
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-teal-400" />
-            <h3 className="text-sm font-bold">
-              Profile, Regional Settings &amp; Receipt Retention Policy
-            </h3>
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">Full name</label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="input-control"
+            />
           </div>
 
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">Full Name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-slate-400 mb-1">
-                  Default Currency
-                </label>
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-                >
-                  <option value="AED">AED (UAE Dirham)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="EUR">EUR (Euro)</option>
-                  <option value="GBP">GBP (British Pound)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-slate-400 mb-1">Timezone</label>
-                <select
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-                >
-                  <option value="Asia/Dubai">Asia/Dubai (UTC+4 GST)</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Receipt Image Retention Policy on Transaction Deletion
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="block text-[14px] font-medium">
+                Default currency
               </label>
               <select
-                data-testid="retention-policy-select"
-                value={retentionPolicy}
-                onChange={(e) =>
-                  setRetentionPolicy(e.target.value as ReceiptRetentionPolicy)
-                }
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="input-control"
               >
-                <option value="delete_with_transaction">
-                  Immediately delete stored receipt image when transaction is
-                  deleted
-                </option>
-                <option value="retain_archive_90d">
-                  Archive receipt for 90 days when transaction is deleted
-                </option>
-                <option value="retain_indefinitely">
-                  Retain receipt in private vault until manually purged
-                </option>
+                <option value="AED">AED (UAE Dirham)</option>
+                <option value="USD">USD (US Dollar)</option>
+                <option value="EUR">EUR (Euro)</option>
+                <option value="GBP">GBP (British Pound)</option>
               </select>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Documents what happens to private Supabase Storage receipt
-                objects when a linked ledger entry is removed.
-              </p>
             </div>
+            <div className="space-y-1.5">
+              <label className="block text-[14px] font-medium">Timezone</label>
+              <select
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+                className="input-control"
+              >
+                <option value="Asia/Dubai">Asia/Dubai (UTC+4 GST)</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+          </div>
 
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">
+              Receipt image retention policy on transaction deletion
+            </label>
+            <select
+              data-testid="retention-policy-select"
+              value={retentionPolicy}
+              onChange={(e) =>
+                setRetentionPolicy(e.target.value as ReceiptRetentionPolicy)
+              }
+              className="input-control"
+            >
+              <option value="delete_with_transaction">
+                Immediately delete stored receipt image when transaction is
+                deleted
+              </option>
+              <option value="retain_archive_90d">
+                Archive receipt for 90 days when transaction is deleted
+              </option>
+              <option value="retain_indefinitely">
+                Retain receipt in private vault until manually purged
+              </option>
+            </select>
+          </div>
+
+          <div className="flex justify-end">
             <button
               type="submit"
               data-testid="save-profile-settings-btn"
-              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold cursor-pointer"
+              className="btn primary"
             >
-              Save Profile &amp; Retention Policy
+              Save profile &amp; retention policy
             </button>
           </div>
         </form>
+      </div>
 
-        {/* Notification & Reminder Intervals */}
+      {/* Section 2: Notification & Reminder Intervals */}
+      <div className="app-grid top pt-6 border-t border-[var(--border)]">
+        <div className="space-y-2" style={{ gridColumn: "span 5" }}>
+          <h2 className="text-[16px] font-medium">
+            Reminder intervals &amp; budget alerts
+          </h2>
+          <p className="text-[14px] text-[var(--muted)]">
+            Set how many days before a credit card statement or recurring bill
+            due date reminders trigger, and which budget utilization percentages
+            raise warnings.
+          </p>
+          <div className="p-3 rounded-[6px] bg-[var(--surface)] border border-[var(--border)] text-[12px] space-y-1">
+            <div className="font-medium">Preview of active rule</div>
+            <div className="text-[var(--muted)]">
+              Card bill due alerts at {ccReminderDays} days prior · Budget
+              thresholds at {budgetThresholds}%.
+            </div>
+          </div>
+        </div>
+
         <form
           onSubmit={handleSaveNotifications}
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
+          style={{ gridColumn: "span 7" }}
         >
-          <div className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-teal-400" />
-            <h3 className="text-sm font-bold">
-              Reminder Intervals &amp; Alert Thresholds
-            </h3>
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">
+              Credit card &amp; recurring bill reminder days before due date
+            </label>
+            <input
+              type="text"
+              value={ccReminderDays}
+              onChange={(e) => setCcReminderDays(e.target.value)}
+              placeholder="7, 3, 1"
+              className="input-control num"
+            />
           </div>
 
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Credit Card &amp; Recurring Bill Reminder Days Before Due Date
-              </label>
-              <input
-                type="text"
-                value={ccReminderDays}
-                onChange={(e) => setCcReminderDays(e.target.value)}
-                placeholder="7, 3, 1"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Budget Utilization Warning Thresholds (%)
-              </label>
-              <input
-                type="text"
-                value={budgetThresholds}
-                onChange={(e) => setBudgetThresholds(e.target.value)}
-                placeholder="50, 75, 90, 100"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-              />
-            </div>
-
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifyFailedOcr}
-                onChange={(e) => setNotifyFailedOcr(e.target.checked)}
-              />
-              <span>Alert in Notification Center when receipt OCR fails</span>
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">
+              Budget utilization warning thresholds (%)
             </label>
+            <input
+              type="text"
+              value={budgetThresholds}
+              onChange={(e) => setBudgetThresholds(e.target.value)}
+              placeholder="50, 75, 90, 100"
+              className="input-control num"
+            />
+          </div>
 
-            <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifyOverdue}
-                onChange={(e) => setNotifyOverdue(e.target.checked)}
-              />
-              <span>Highlight overdue credit card bills prominently</span>
-            </label>
+          <label className="flex items-center justify-between gap-3 py-1 cursor-pointer">
+            <div>
+              <div className="text-[14px] font-medium">
+                Failed receipt extraction alerts
+              </div>
+              <div className="text-[12px] text-[var(--muted)]">
+                Post an alert in the notification center when OCR requires retry
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={notifyFailedOcr}
+              onChange={(e) => setNotifyFailedOcr(e.target.checked)}
+            />
+          </label>
 
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold cursor-pointer"
-            >
-              Save Notification Preferences
+          <label className="flex items-center justify-between gap-3 py-1 cursor-pointer">
+            <div>
+              <div className="text-[14px] font-medium">
+                Overdue statement alerts
+              </div>
+              <div className="text-[12px] text-[var(--muted)]">
+                Highlight overdue credit card bills in the overview and cards
+                table
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              checked={notifyOverdue}
+              onChange={(e) => setNotifyOverdue(e.target.checked)}
+            />
+          </label>
+
+          <div className="flex justify-end">
+            <button type="submit" className="btn primary">
+              Save notification preferences
             </button>
           </div>
         </form>
       </div>
 
-      {/* Data Export, Demo Data Toggle & Account Deletion */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-teal-400" />
-          <h3 className="text-sm font-bold">
-            Data Portability, Demo Sandbox Control &amp; Account Deletion
-          </h3>
-        </div>
-
-        <div className="flex flex-wrap gap-3 text-xs">
-          <button
-            type="button"
-            data-testid="export-json-backup-btn"
-            onClick={handleExportFullJson}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold cursor-pointer"
-          >
-            <Download className="h-4 w-4" />
-            <span>Export Full Financial Backup (JSON)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await mutateFinance("reset_demo_data", { seedDemoData: false });
-              setSavedBanner(
-                "Switched to a clean, empty ledger (all demo sample records cleared)."
-              );
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold cursor-pointer"
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Start Clean Empty Ledger (Clear Sample Data)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={async () => {
-              await mutateFinance("reset_demo_data", { seedDemoData: true });
-              setSavedBanner("Restored UAE Demo Sample Data.");
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-semibold cursor-pointer"
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Reset UAE Demo Sample Data</span>
-          </button>
-
-          <button
-            type="button"
-            data-testid="delete-account-trigger-btn"
-            onClick={() => setConfirmDeleteAccount(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-950/70 border border-rose-700 text-rose-300 font-semibold hover:bg-rose-900/60 cursor-pointer"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span>Delete Account &amp; All Data</span>
-          </button>
-        </div>
-
-        {confirmDeleteAccount && (
-          <div className="p-4 rounded-xl bg-rose-950/60 border border-rose-600 space-y-3 text-xs">
-            <div className="font-bold text-rose-200">
-              Permanent Account &amp; Financial Vault Deletion
-            </div>
-            <p className="text-rose-200/90">
-              This will permanently purge your profile, transactions, cards,
-              statements, budgets, and private receipt images.
-            </p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setConfirmDeleteAccount(false)}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-200 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                data-testid="confirm-delete-account-btn"
-                onClick={() => mutateFinance("delete_account")}
-                className="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold cursor-pointer"
-              >
-                Permanently Delete Everything
-              </button>
-            </div>
+      {/* Section 3: Audit Trail & Data Portability */}
+      <div className="app-grid top pt-6 border-t border-[var(--border)]">
+        <div className="space-y-2" style={{ gridColumn: "span 5" }}>
+          <h2 className="text-[16px] font-medium">
+            Data export, sandbox reset &amp; audit log
+          </h2>
+          <p className="text-[14px] text-[var(--muted)]">
+            Download a complete JSON snapshot of your financial records or
+            switch between the seeded UAE sample dataset and a clean empty
+            ledger.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="button"
+              data-testid="export-json-backup-btn"
+              onClick={handleExportFullJson}
+              className="btn primary"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Export JSON backup</span>
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await mutateFinance("reset_demo_data", { seedDemoData: false });
+                setSavedBanner(
+                  "Switched to a clean empty ledger (sample data cleared)."
+                );
+              }}
+              className="btn"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              <span>Start clean empty ledger</span>
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                await mutateFinance("reset_demo_data", { seedDemoData: true });
+                setSavedBanner("Restored UAE Demo Sample Data.");
+              }}
+              className="btn"
+            >
+              Restore UAE demo data
+            </button>
           </div>
-        )}
+        </div>
+
+        <div className="panel space-y-3" style={{ gridColumn: "span 7" }}>
+          <div className="panel-header">
+            <h2>Immutable financial audit log</h2>
+            <span className="panel-meta">
+              {state.audit_logs.length} recorded events
+            </span>
+          </div>
+          <div className="table-wrap">
+            <table className="ledger-table">
+              <thead>
+                <tr>
+                  <th>Action</th>
+                  <th>Summary</th>
+                  <th className="n">Date (GST)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.audit_logs.slice(0, 6).map((log) => (
+                  <tr key={log.id}>
+                    <td>
+                      <span className="pill">{log.action}</span>
+                    </td>
+                    <td>{log.summary}</td>
+                    <td className="n text-[var(--muted)]">
+                      {formatDubaiDate(log.created_at)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      {/* Financial Record Audit Trail */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-3`}>
-        <div className="flex items-center gap-2">
-          <History className="h-4 w-4 text-teal-400" />
-          <h3 className="text-sm font-bold">
-            Financial Record Audit Log (Immutable Change History)
-          </h3>
+      {/* Section 4: Destructive Actions (Last, in its own section per app-screens.md §8.2) */}
+      <div className="app-grid top pt-6 border-t border-[var(--border)]">
+        <div className="space-y-1" style={{ gridColumn: "span 5" }}>
+          <h2 className="text-[16px] font-medium text-[var(--negative)]">
+            Delete account &amp; financial vault
+          </h2>
+          <p className="text-[14px] text-[var(--muted)]">
+            Permanently deletes your profile, bank accounts, cards, confirmed
+            transactions, statements, budgets, and private receipt images.
+          </p>
         </div>
-        <div className="space-y-2 max-h-60 overflow-y-auto text-xs">
-          {state.audit_logs.map((log) => (
-            <div
-              key={log.id}
-              className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center justify-between gap-2"
+
+        <div className="panel space-y-3" style={{ gridColumn: "span 7" }}>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <span className="text-[13px] text-[var(--muted)]">
+              Account <code>{state.profile.email}</code> and all associated RLS
+              records will be purged.
+            </span>
+            <button
+              type="button"
+              data-testid="delete-account-trigger-btn"
+              onClick={() => setConfirmDeleteAccount(true)}
+              className="btn danger"
             >
-              <div>
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-teal-300 font-mono text-[10px] uppercase mr-2">
-                  {log.action}
-                </span>
-                <span>{log.summary}</span>
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete account &amp; all data</span>
+            </button>
+          </div>
+
+          {confirmDeleteAccount && (
+            <div className="p-3.5 rounded-[6px] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)] space-y-3 text-[13px]">
+              <div className="font-semibold">
+                Confirm permanent deletion of {state.profile.email}
               </div>
-              <span className="text-[10px] text-slate-500 whitespace-nowrap">
-                {formatDubaiDate(log.created_at)}
-              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeleteAccount(false)}
+                  className="btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  data-testid="confirm-delete-account-btn"
+                  onClick={() => mutateFinance("delete_account")}
+                  className="btn danger"
+                >
+                  Permanently delete everything
+                </button>
+              </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

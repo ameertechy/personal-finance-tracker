@@ -1,26 +1,16 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { FinanceProvider } from "@/context/finance-context";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "DirhamPulse — UAE Personal Finance & Expense Management Portal",
+  title: "DirhamPulse · UAE Personal Finance & Expense Portal",
   description:
-    "Mobile-first UAE personal finance tracker with receipt OCR, bank SMS parsing, screenshot import, credit card statement management, and AED budget analytics.",
+    "Mobile-first UAE personal finance ledger with receipt OCR, bank SMS parsing, screenshot import, credit card statement management, and AED budget analytics.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "DirhamPulse",
   },
   icons: {
@@ -30,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d9488",
+  themeColor: "#f2f4f7",
   width: "device-width",
   initialScale: 1,
 };
@@ -41,11 +31,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
+    <html lang="en-AE" className="h-full antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full">
         <FinanceProvider>{children}</FinanceProvider>
       </body>
     </html>

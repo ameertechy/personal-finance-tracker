@@ -17,14 +17,10 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 flex items-center justify-center p-6">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold animate-pulse">
-            AED
-          </div>
-          <p className="text-xs text-slate-400">
-            Loading UAE Financial Vault (Asia/Dubai)...
-          </p>
+      <div className="min-h-screen bg-[var(--ground)] text-[var(--text)] p-6">
+        <div className="max-w-5xl mx-auto space-y-4">
+          <div className="h-6 w-48 rounded bg-[var(--raised)]" />
+          <div className="h-24 w-full rounded bg-[var(--surface)] border border-[var(--border)]" />
         </div>
       </div>
     );

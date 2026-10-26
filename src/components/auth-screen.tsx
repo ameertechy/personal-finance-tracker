@@ -1,16 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ShieldCheck,
-  Lock,
-  Mail,
-  User,
-  ArrowRight,
-  KeyRound,
-  Sparkles,
-  CheckCircle2,
-} from "lucide-react";
 
 interface AuthScreenProps {
   onAuthenticated: () => Promise<void>;
@@ -98,193 +88,180 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4">
-      <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
+    <div className="min-h-screen bg-[var(--ground)] text-[var(--text)] flex flex-col justify-center items-center p-4">
+      <div className="w-full max-w-md panel space-y-5">
         <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-teal-500/15 border border-teal-500/40 flex items-center justify-center text-teal-400 font-bold text-lg">
-            AED
-          </div>
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 28 28"
+            fill="none"
+            aria-hidden="true"
+          >
+            <rect
+              x="2"
+              y="2"
+              width="24"
+              height="24"
+              rx="5"
+              stroke="var(--text)"
+              strokeWidth="1.75"
+            />
+            <path
+              d="M8 9H15.5C18.5 9 20.5 11 20.5 14C20.5 17 18.5 19 15.5 19H8V9Z"
+              stroke="var(--text)"
+              strokeWidth="1.75"
+            />
+            <path
+              d="M6 12.5H17M6 15.5H17"
+              stroke="var(--data-hue)"
+              strokeWidth="1.5"
+            />
+          </svg>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">
+            <h1 className="text-[20px] font-semibold tracking-tight">
               DirhamPulse UAE
             </h1>
-            <p className="text-xs text-slate-400">
-              Private Personal Finance &amp; Expense Management Portal
+            <p className="text-[12px] text-[var(--muted)]">
+              Personal Finance &amp; Salary Ledger · Asia/Dubai (AED)
             </p>
           </div>
         </div>
 
-        <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800 text-xs font-medium">
+        <div className="segmented w-full flex">
           <button
             type="button"
+            aria-pressed={mode === "signin"}
             onClick={() => {
               setMode("signin");
               setError(null);
             }}
-            className={`flex-1 py-2 rounded-lg transition ${
-              mode === "signin"
-                ? "bg-teal-600 text-white shadow"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className="flex-1"
           >
-            Sign In
+            Sign in
           </button>
           <button
             type="button"
+            aria-pressed={mode === "signup"}
             onClick={() => {
               setMode("signup");
               setError(null);
             }}
-            className={`flex-1 py-2 rounded-lg transition ${
-              mode === "signup"
-                ? "bg-teal-600 text-white shadow"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className="flex-1"
           >
-            Register Account
+            Register account
           </button>
           <button
             type="button"
+            aria-pressed={mode === "reset"}
             onClick={() => {
               setMode("reset");
               setError(null);
             }}
-            className={`flex-1 py-2 rounded-lg transition ${
-              mode === "reset"
-                ? "bg-teal-600 text-white shadow"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
+            className="flex-1"
           >
-            Reset Password
+            Reset password
           </button>
         </div>
 
         {error && (
           <div
             role="alert"
-            className="rounded-xl bg-rose-950/60 border border-rose-700/60 px-3.5 py-2.5 text-xs text-rose-200"
+            className="rounded-[6px] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)] px-3 py-2 text-[13px]"
           >
             {error}
           </div>
         )}
 
         {infoMessage && (
-          <div className="rounded-xl bg-emerald-950/60 border border-emerald-700/60 px-3.5 py-2.5 text-xs text-emerald-200 flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-            <span>{infoMessage}</span>
+          <div className="rounded-[6px] bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)] px-3 py-2 text-[13px]">
+            {infoMessage}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="h-4 w-4 text-slate-500 absolute left-3 top-3" />
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500"
-                  placeholder="Your Name"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-[14px] font-medium">Full name</label>
+              <input
+                type="text"
+                required
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="input-control"
+                placeholder="Your full name"
+              />
             </div>
           )}
 
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              Email Address
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">
+              Email address
             </label>
-            <div className="relative">
-              <Mail className="h-4 w-4 text-slate-500 absolute left-3 top-3" />
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500"
-                placeholder="you@example.ae"
-              />
-            </div>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-control"
+              placeholder="you@dirhampulse.ae"
+            />
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">
-              {mode === "reset" ? "New Password (min 8 chars)" : "Password"}
+          <div className="space-y-1.5">
+            <label className="block text-[14px] font-medium">
+              {mode === "reset" ? "New password (min 8 characters)" : "Password"}
             </label>
-            <div className="relative">
-              {mode === "reset" ? (
-                <KeyRound className="h-4 w-4 text-slate-500 absolute left-3 top-3" />
-              ) : (
-                <Lock className="h-4 w-4 text-slate-500 absolute left-3 top-3" />
-              )}
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 pl-9 pr-3 py-2.5 text-sm text-white focus:outline-none focus:border-teal-500"
-                placeholder="••••••••••••"
-              />
-            </div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-control"
+              placeholder="••••••••••••"
+            />
           </div>
 
           {mode === "signup" && (
-            <label className="flex items-center gap-2.5 text-xs text-slate-300 cursor-pointer pt-1">
+            <label className="flex items-center gap-2 text-[13px] text-[var(--muted)] cursor-pointer">
               <input
                 type="checkbox"
                 checked={seedDemoData}
                 onChange={(e) => setSeedDemoData(e.target.checked)}
-                className="rounded border-slate-700 bg-slate-950 text-teal-500"
               />
-              <span>
-                Include optional UAE sample data (labeled Demo Mode)
-              </span>
+              <span>Include UAE sample data (labeled Demo Mode)</span>
             </label>
           )}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-xl bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-semibold py-2.5 text-sm flex items-center justify-center gap-2 transition cursor-pointer"
+            className="btn primary w-full"
           >
-            <span>
-              {submitting
-                ? "Processing..."
-                : mode === "signin"
-                ? "Sign In to Vault"
-                : mode === "signup"
-                ? "Create Isolated Account"
-                : "Update Password"}
-            </span>
-            <ArrowRight className="h-4 w-4" />
+            {submitting
+              ? "Processing..."
+              : mode === "signin"
+              ? "Sign in to ledger"
+              : mode === "signup"
+              ? "Create isolated account"
+              : "Update password"}
           </button>
         </form>
 
-        <div className="pt-2 border-t border-slate-800 space-y-3">
+        <div className="pt-3 border-t border-[var(--border)] space-y-3">
           <button
             type="button"
             onClick={handleQuickDemoSignIn}
             disabled={submitting}
-            className="w-full rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-200 py-2 text-xs font-medium flex items-center justify-center gap-2 transition cursor-pointer"
+            className="btn w-full"
           >
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <span>Instant Sign-In to UAE Demo Sandbox</span>
+            Open UAE Demo Sandbox
           </button>
-
-          <div className="flex items-start gap-2 text-[11px] text-slate-400 bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
-            <ShieldCheck className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
-            <div>
-              <strong className="text-slate-200">Zero-Trust Privacy:</strong>{" "}
-              Row-Level Security (RLS) isolates every account by{" "}
-              <code className="text-teal-300">user_id</code>. Full card numbers,
-              CVVs, PINs, and OTPs are strictly blocked.
-            </div>
-          </div>
+          <p className="text-[12px] text-[var(--muted)] leading-relaxed">
+            Row-level security isolates every account by{" "}
+            <code>user_id</code>. Full card numbers, CVVs, PINs, and OTPs are
+            rejected at validation.
+          </p>
         </div>
       </div>
     </div>

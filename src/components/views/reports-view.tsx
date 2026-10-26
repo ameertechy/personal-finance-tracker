@@ -1,25 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import {
-  BarChart3,
-  Download,
-  Printer,
-  Sparkles,
-  TrendingUp,
-  CreditCard,
-  Building2,
-  Repeat,
-} from "lucide-react";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { Download, Printer } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
 import {
   calculateAccountingSummary,
@@ -30,9 +12,10 @@ import {
   toFils,
 } from "@/lib/money";
 import { formatDubaiDate } from "@/lib/dubai-time";
+import { TasteBarChart, TasteBarList } from "@/components/taste-charts";
 
 export function ReportsView() {
-  const { state, selectedMonth, theme } = useFinance();
+  const { state, selectedMonth } = useFinance();
 
   const summary = useMemo(() => {
     if (!state) return null;
@@ -59,7 +42,10 @@ export function ReportsView() {
 
   const merchantSpending = useMemo(() => {
     if (!state) return [];
-    const map = new Map<string, { merchant: string; count: number; fils: number }>();
+    const map = new Map<
+      string,
+      { merchant: string; count: number; fils: number }
+    >();
     for (const tx of state.transactions) {
       if (
         !tx.transaction_date.startsWith(selectedMonth) ||
@@ -86,7 +72,7 @@ export function ReportsView() {
       .sort((a, b) => b.amount - a.amount);
   }, [state, selectedMonth]);
 
-  const monthOverMonthData = useMemo(() => {
+  const monthOverMonthBars = useMemo(() => {
     if (!state) return [];
     const months = ["2026-08", "2026-09", "2026-10", "2026-11"];
     return months.map((mKey) => {
@@ -101,15 +87,13 @@ export function ReportsView() {
         recurring: state.recurring,
       });
       return {
-        month: mKey,
-        Income: mSum.effectiveMonthlyIncome,
-        Expenses: mSum.netExpenses,
-        Savings: Math.max(0, mSum.monthlySavings),
+        label: mKey,
+        value: mSum.netExpenses,
+        secondaryValue: mSum.effectiveMonthlyIncome,
       };
     });
   }, [state]);
 
-  // Grounded, non-fabricated insights strictly derived from actual recorded transactions
   const dataDrivenInsights = useMemo(() => {
     if (!state || !summary) return [];
     const insights: string[] = [];
@@ -206,243 +190,190 @@ export function ReportsView() {
     URL.revokeObjectURL(url);
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
-
   return (
-    <div className="space-y-6">
-      {/* Header & Export / Print Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="title-row">
         <div>
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-teal-400" />
-            <span>Financial Reports &amp; Analytics ({selectedMonth})</span>
-          </h2>
-          <p className="text-xs text-slate-400">
-            Income vs. Expenses, Budget vs. Actual, Merchant &amp; Card
-            Analytics, Bill History
-          </p>
+          <h1>Reports &amp; Financial Insights · {selectedMonth}</h1>
+          <p className="sub">{dataDrivenInsights[0]}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
+            className="btn"
           >
             <Printer className="h-3.5 w-3.5" />
-            <span>Print Report</span>
+            <span>Print report</span>
           </button>
           <button
             type="button"
             data-testid="export-report-csv-btn"
             onClick={handleExportReportCsv}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
             <Download className="h-3.5 w-3.5" />
-            <span>Export Report CSV</span>
+            <span>Export report CSV</span>
           </button>
         </div>
       </div>
 
-      {/* Data-Backed Financial Insights */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-3`}>
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-400">
-          <Sparkles className="h-4 w-4" />
-          <span>Verified Data-Backed Financial Insights</span>
-        </div>
-        <ul className="space-y-1.5 text-xs text-slate-300 list-disc list-inside">
-          {dataDrivenInsights.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Month-over-Month Income vs Expenses vs Savings Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <h3 className="text-sm font-bold flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-teal-400" />
-            <span>Month-over-Month Income vs. Expenses vs. Savings</span>
-          </h3>
-          <div className="h-64 w-full min-w-[240px]">
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={monthOverMonthData}>
-                <XAxis dataKey="month" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
-                <Tooltip
-                  formatter={(val) => formatCurrency(Number(val))}
-                />
-                <Legend />
-                <Bar dataKey="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Expenses" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Savings" fill="#0d9488" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+      {/* Month-over-Month Comparison (6 cols) & Budget vs Actual Table (6 cols) */}
+      <div className="app-grid top">
+        <section className="panel space-y-4" style={{ gridColumn: "span 6" }}>
+          <div className="panel-header">
+            <h2>Month-over-month expenses vs. income</h2>
+            <span className="panel-meta">
+              Grey bar: income · Blue/Ink bar: net expenses
+            </span>
           </div>
-        </div>
+          <TasteBarChart data={monthOverMonthBars} height={205} highlightIndex={2} />
 
-        {/* Budget vs Actual Table */}
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <h3 className="text-sm font-bold">
-            Budget vs. Actual Spending ({selectedMonth})
-          </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+          <div className="pt-3 border-t border-[var(--border)] space-y-1.5 text-[13px] text-[var(--muted)]">
+            {dataDrivenInsights.slice(1).map((item, idx) => (
+              <p key={idx}>{item}</p>
+            ))}
+          </div>
+        </section>
+
+        <section className="panel space-y-4" style={{ gridColumn: "span 6" }}>
+          <div className="panel-header">
+            <h2>Budget vs. actual spending ({selectedMonth})</h2>
+            <span className="panel-meta">AED</span>
+          </div>
+          <div className="table-wrap">
+            <table className="ledger-table">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 text-[10px] uppercase">
-                  <th className="py-2">Category</th>
-                  <th className="py-2 text-right">Budget</th>
-                  <th className="py-2 text-right">Actual</th>
-                  <th className="py-2 text-right">Variance</th>
-                  <th className="py-2 text-right">Used %</th>
+                <tr>
+                  <th>Category</th>
+                  <th className="n">Budget</th>
+                  <th className="n">Actual</th>
+                  <th className="n">Variance</th>
+                  <th className="n">Used %</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody>
                 {categoryComparison.map((row) => (
                   <tr key={row.categoryName}>
-                    <td className="py-2 font-medium">{row.categoryName}</td>
-                    <td className="py-2 text-right">
-                      {formatCurrency(row.limitAmount)}
-                    </td>
-                    <td className="py-2 text-right font-semibold">
+                    <td className="font-medium">{row.categoryName}</td>
+                    <td className="n">{formatCurrency(row.limitAmount)}</td>
+                    <td className="n font-semibold">
                       {formatCurrency(row.spentAmount)}
                     </td>
                     <td
-                      className={`py-2 text-right font-semibold ${
+                      className={`n font-medium ${
                         row.remainingAmount >= 0
-                          ? "text-emerald-400"
-                          : "text-rose-400"
+                          ? "text-[var(--positive)]"
+                          : "text-[var(--negative)]"
                       }`}
                     >
                       {formatCurrency(row.remainingAmount)}
                     </td>
-                    <td className="py-2 text-right">{row.utilizationPct}%</td>
+                    <td className="n">{row.utilizationPct}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Merchant-wise Spending & Credit Card Utilization / Bill Payment History */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <h3 className="text-sm font-bold flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-teal-400" />
-            <span>Merchant-wise Spending ({selectedMonth})</span>
-          </h3>
-          {merchantSpending.length === 0 ? (
-            <p className="text-xs text-slate-400 py-4">
-              No merchant expenses recorded for {selectedMonth}.
-            </p>
-          ) : (
-            <div className="space-y-2.5 text-xs">
-              {merchantSpending.map((m) => (
-                <div
-                  key={m.merchant}
-                  className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-semibold">{m.merchant}</div>
-                    <div className="text-[11px] text-slate-400">
-                      {m.count} transaction(s)
-                    </div>
-                  </div>
-                  <div className="font-bold">{formatCurrency(m.amount)}</div>
-                </div>
-              ))}
+      {/* Merchant-wise Spending (6 cols) & Card Utilization / Payment History (6 cols) */}
+      <div className="app-grid top">
+        <section className="panel space-y-4" style={{ gridColumn: "span 6" }}>
+          <div className="panel-header">
+            <h2>Merchant-wise spending ({selectedMonth})</h2>
+            <span className="panel-meta">{merchantSpending.length} merchants</span>
+          </div>
+          <TasteBarList
+            rows={merchantSpending.map((m) => ({
+              label: m.merchant,
+              sub: `${m.count} txn`,
+              value: m.amount,
+            }))}
+          />
+        </section>
+
+        <section className="panel space-y-4" style={{ gridColumn: "span 6" }}>
+          <div className="panel-header">
+            <h2>Credit card utilization &amp; repayment history</h2>
+            <span className="panel-meta">AED</span>
+          </div>
+
+          <div className="table-wrap">
+            <table className="ledger-table">
+              <thead>
+                <tr>
+                  <th>Card</th>
+                  <th className="n">Limit</th>
+                  <th className="n">Utilization</th>
+                  <th className="n">Outstanding</th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.cards
+                  .filter((c) => c.card_type === "credit")
+                  .map((c) => {
+                    const out = calculateCardOutstanding(
+                      c,
+                      state.transactions
+                    );
+                    const limit = c.credit_limit ?? 0;
+                    const pct =
+                      limit > 0
+                        ? Number(((out / limit) * 100).toFixed(1))
+                        : 0;
+                    return (
+                      <tr key={c.id}>
+                        <td className="font-medium">
+                          {c.display_name} (••{c.last_four})
+                        </td>
+                        <td className="n">{formatCurrency(limit)}</td>
+                        <td className="n">{pct}%</td>
+                        <td className="n font-semibold">
+                          {formatCurrency(out)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="pt-3 border-t border-[var(--border)]">
+            <div className="text-[13px] font-semibold mb-2">
+              Recorded credit card repayments
             </div>
-          )}
-        </div>
-
-        {/* Credit Card Utilization & Bill Payment History */}
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <h3 className="text-sm font-bold flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-amber-400" />
-            <span>Credit Card Utilization &amp; Bill Payment History</span>
-          </h3>
-
-          <div className="space-y-2.5 text-xs">
-            {state.cards
-              .filter((c) => c.card_type === "credit")
-              .map((c) => {
-                const out = calculateCardOutstanding(c, state.transactions);
-                const limit = c.credit_limit ?? 0;
-                const pct =
-                  limit > 0 ? Number(((out / limit) * 100).toFixed(1)) : 0;
-                return (
-                  <div
-                    key={c.id}
-                    className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between"
-                  >
-                    <div>
-                      <div className="font-bold">
-                        {c.display_name} (••{c.last_four})
-                      </div>
-                      <div className="text-[11px] text-slate-400">
-                        Limit: {formatCurrency(limit)} • Utilization: {pct}%
-                      </div>
-                    </div>
-                    <div className="text-right font-bold text-amber-400">
-                      {formatCurrency(out)}
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-
-          <div className="pt-2 border-t border-slate-800/60 space-y-2">
-            <div className="text-xs font-bold text-slate-300">
-              Recorded Credit Card Repayments
+            <div className="table-wrap">
+              <table className="ledger-table">
+                <thead>
+                  <tr>
+                    <th>Card &amp; reference</th>
+                    <th className="n">Payment date</th>
+                    <th className="n">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.cc_payments.map((p) => {
+                    const card = state.cards.find((c) => c.id === p.card_id);
+                    return (
+                      <tr key={p.id}>
+                        <td>
+                          {card?.display_name || "Card"} (••{card?.last_four}) ·{" "}
+                          <code>{p.reference_number || "-"}</code>
+                        </td>
+                        <td className="n">{formatDubaiDate(p.payment_date)}</td>
+                        <td className="n font-semibold text-[var(--positive)]">
+                          {formatCurrency(p.amount, p.currency)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            {state.cc_payments.length === 0 ? (
-              <p className="text-xs text-slate-400">
-                No credit card repayments recorded yet.
-              </p>
-            ) : (
-              state.cc_payments.map((p) => {
-                const card = state.cards.find((c) => c.id === p.card_id);
-                return (
-                  <div
-                    key={p.id}
-                    className="p-2.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <span className="font-semibold">
-                        {card?.display_name || "Card"} (••{card?.last_four})
-                      </span>
-                      <div className="text-[10px] text-slate-400">
-                        Paid on {formatDubaiDate(p.payment_date)} • Ref:{" "}
-                        {p.reference_number || "—"}
-                      </div>
-                    </div>
-                    <strong className="text-emerald-400">
-                      {formatCurrency(p.amount, p.currency)}
-                    </strong>
-                  </div>
-                );
-              })
-            )}
           </div>
-
-          <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <Repeat className="h-3.5 w-3.5 text-teal-400" />
-              <span>Active Recurring Commitments:</span>
-            </span>
-            <strong>
-              {
-                state.recurring.filter(
-                  (r) => r.is_active && r.kind === "expense"
-                ).length
-              }{" "}
-              schedules
-            </strong>
-          </div>
-        </div>
+        </section>
       </div>
     </div>
   );

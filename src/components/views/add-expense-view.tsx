@@ -7,13 +7,8 @@ import {
   Images,
   PenTool,
   FileSpreadsheet,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
   RefreshCw,
-  ShieldCheck,
   Check,
-  ArrowRight,
   Upload,
 } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
@@ -31,40 +26,41 @@ type AddTab = "receipt" | "sms" | "screenshot" | "manual" | "csv";
 
 const SAMPLE_SMS_MESSAGES = [
   {
-    label: "Debit Card Spend (Carrefour)",
+    label: "Debit card spend (Carrefour)",
     text: "Your debit card ending 1234 was used for AED 85.50 at Carrefour on 25 Oct 2026 at 18:32.",
   },
   {
-    label: "Credit Card Spend (ADNOC Fuel)",
+    label: "Credit card spend (ADNOC)",
     text: "Emirates NBD Alert: Credit Card ending 4821 used for AED 165.00 at ADNOC Service Station Dubai on 26 Oct 2026 at 09:15. Ref: ENBD994012.",
   },
   {
-    label: "Refund / Reversal Notification",
+    label: "Refund notification",
     text: "Refund of AED 95.00 from Amazon.ae has been credited to your card ending 4821 on 26 Oct 2026 at 11:05. Ref: AMZREF4421.",
   },
   {
-    label: "Declined Card Alert",
+    label: "Declined card alert",
     text: "Transaction of AED 450.00 at Noon.com on your card ending 7390 on 26 Oct 2026 at 14:10 was declined due to daily limit.",
   },
   {
-    label: "Credit Card Bill Payment",
+    label: "Credit card bill payment",
     text: "Thank you for your payment of AED 1,500.00 towards your credit card ending 4821 on 26 Oct 2026. Ref: CCPAY8812.",
   },
 ];
 
 export function AddExpenseView() {
-  const { state, mutateFinance, setActiveSection, theme } = useFinance();
+  const { state, mutateFinance, setActiveSection } = useFinance();
 
   const [activeTab, setActiveTab] = useState<AddTab>("receipt");
 
-  // Extraction & Review workflow state
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState<string | null>(null);
   const [activeJob, setActiveJob] = useState<ExtractionJob | null>(null);
   const [reviewCandidates, setReviewCandidates] = useState<
     ExtractedTransactionCandidate[]
   >([]);
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>(
+    []
+  );
   const [uploadedPreviewUrl, setUploadedPreviewUrl] = useState<string | null>(
     null
   );
@@ -76,7 +72,6 @@ export function AddExpenseView() {
     null
   );
 
-  // Inputs for Receipt OCR, SMS text, Screenshot, and CSV
   const [receiptFileName, setReceiptFileName] = useState(
     "carrefour_uae_receipt.jpg"
   );
@@ -94,7 +89,6 @@ export function AddExpenseView() {
     "Date,Merchant,Amount,Currency,Type,Reference\n2026-10-24,Waitrose Dubai Mall,194.25,AED,Expense,WTR-9012\n2026-10-25,CAFU Fuel Delivery,118.00,AED,Expense,CAFU-7741"
   );
 
-  // Manual Entry Form State
   const [manualType, setManualType] = useState<TransactionType>("expense");
   const [manualAmount, setManualAmount] = useState("");
   const [manualCurrency, setManualCurrency] = useState("AED");
@@ -221,7 +215,6 @@ export function AddExpenseView() {
         : "receipt_ocr";
 
     const transactionsPayload = toSave.map((c) => {
-      // Match card by last 4 digits if available
       const matchedCard = c.card_last_four
         ? state.cards.find((card) => card.last_four === c.card_last_four)
         : state.cards[0];
@@ -333,38 +326,23 @@ export function AddExpenseView() {
     setManualNotes("");
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
-
   return (
-    <div className="space-y-6">
-      {/* Workflow Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="title-row">
         <div>
-          <h2 className="text-lg font-bold">
-            Record Expense &amp; Intelligent Extraction Hub
-          </h2>
-          <p className="text-xs text-slate-400">
-            Workflow: Upload/Paste → Extract → Validate → Review → Edit →
-            Confirm → Save
+          <h1>Record Expense &amp; Extraction Workbench</h1>
+          <p className="sub">
+            Upload or paste → Extract → Validate → Review → Edit → Confirm →
+            Save
           </p>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-teal-400 bg-teal-500/10 border border-teal-500/30 px-3 py-1.5 rounded-xl">
-          <ShieldCheck className="h-4 w-4" />
-          <span>Explicit Confirmation Required — Zero Silent Writes</span>
-        </div>
+        <span className="pill pos">Explicit confirmation required</span>
       </div>
 
-      {/* Mode Selection Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      {/* Segmented Mode Selector */}
+      <div className="segmented">
         {[
-          {
-            id: "receipt" as AddTab,
-            label: "Receipt Camera / Photo",
-            icon: Camera,
-          },
+          { id: "receipt" as AddTab, label: "Receipt photo / OCR", icon: Camera },
           {
             id: "sms" as AddTab,
             label: "Bank SMS / WhatsApp",
@@ -372,17 +350,13 @@ export function AddExpenseView() {
           },
           {
             id: "screenshot" as AddTab,
-            label: "App Screenshot (Multi)",
+            label: "Screenshot (multi-row)",
             icon: Images,
           },
-          {
-            id: "manual" as AddTab,
-            label: "Fast Manual Entry",
-            icon: PenTool,
-          },
+          { id: "manual" as AddTab, label: "Manual entry", icon: PenTool },
           {
             id: "csv" as AddTab,
-            label: "CSV Statement Import",
+            label: "CSV statement",
             icon: FileSpreadsheet,
           },
         ].map((t) => {
@@ -393,21 +367,16 @@ export function AddExpenseView() {
               key={t.id}
               type="button"
               data-testid={`add-tab-${t.id}`}
+              aria-pressed={active}
               onClick={() => {
                 setActiveTab(t.id);
                 setExtractError(null);
                 setSaveSuccessMessage(null);
               }}
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
-                active
-                  ? "bg-teal-600 border-teal-500 text-white shadow"
-                  : theme === "dark"
-                  ? "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-100"
-              }`}
+              className="inline-flex items-center gap-1.5"
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t.label}</span>
+              <Icon className="h-3.5 w-3.5" />
+              <span>{t.label}</span>
             </button>
           );
         })}
@@ -416,18 +385,15 @@ export function AddExpenseView() {
       {saveSuccessMessage && (
         <div
           data-testid="save-confirmation-banner"
-          className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-600/60 text-emerald-200 text-xs flex flex-wrap items-center justify-between gap-3"
+          className="p-3.5 rounded-[6px] bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)] flex flex-wrap items-center justify-between gap-3 text-[13px]"
         >
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-            <span>{saveSuccessMessage}</span>
-          </div>
+          <span>{saveSuccessMessage}</span>
           <button
             type="button"
             onClick={() => setActiveSection("transactions")}
-            className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 cursor-pointer"
+            className="btn primary h-8 px-3 text-[12px]"
           >
-            View in Ledger
+            View in ledger
           </button>
         </div>
       )}
@@ -436,42 +402,37 @@ export function AddExpenseView() {
         <div
           role="alert"
           data-testid="extraction-error-banner"
-          className="p-4 rounded-2xl bg-rose-950/60 border border-rose-700 text-rose-200 text-xs flex items-center justify-between gap-3"
+          className="p-3.5 rounded-[6px] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)] flex items-center justify-between gap-3 text-[13px]"
         >
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
-            <span>{extractError}</span>
-          </div>
+          <span>{extractError}</span>
           {allowDuplicateOverride && (
             <button
               type="button"
               data-testid="confirm-duplicate-override-btn"
               onClick={handleConfirmAndSaveExtracted}
-              className="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold cursor-pointer"
+              className="btn primary h-8 px-3 text-[12px]"
             >
-              Confirm Save Duplicate Anyway
+              Confirm save duplicate anyway
             </button>
           )}
         </div>
       )}
 
-      {/* TAB 1: RECEIPT SCANNING (CAMERA & GALLERY UPLOAD) */}
+      {/* TAB 1: RECEIPT SCANNING */}
       {activeTab === "receipt" && (
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="panel space-y-4">
+          <div className="panel-header">
             <div>
-              <h3 className="text-sm font-bold">
-                UAE Receipt Camera Capture &amp; Gallery Upload
-              </h3>
-              <p className="text-xs text-slate-400">
+              <h2>UAE receipt camera capture &amp; gallery upload</h2>
+              <p className="panel-meta">
                 Extracts merchant, AED total, 5% UAE VAT, TRN/receipt number,
-                card ending, and line items.
+                card ending, and line items
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer">
+              <label className="btn primary cursor-pointer">
                 <Camera className="h-3.5 w-3.5" />
-                <span>Take Camera Photo</span>
+                <span>Take camera photo</span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -480,9 +441,9 @@ export function AddExpenseView() {
                   className="hidden"
                 />
               </label>
-              <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer">
+              <label className="btn cursor-pointer">
                 <Upload className="h-3.5 w-3.5" />
-                <span>Upload Receipt Image / PDF</span>
+                <span>Upload image / PDF</span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -493,17 +454,16 @@ export function AddExpenseView() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-slate-400">
-              Receipt OCR Text / UAE Thermal Receipt Content (Editable or
-              auto-populated from photo)
+          <div className="space-y-1.5">
+            <label className="block text-[13px] font-medium">
+              Receipt OCR content (editable or populated from image)
             </label>
             <textarea
               rows={4}
               data-testid="receipt-ocr-textarea"
               value={receiptOcrHint}
               onChange={(e) => setReceiptOcrHint(e.target.value)}
-              className="w-full rounded-xl bg-slate-950/70 border border-slate-800 p-3 text-xs font-mono"
+              className="input-control"
             />
           </div>
 
@@ -519,14 +479,11 @@ export function AddExpenseView() {
                   ocrTextHint: receiptOcrHint,
                 })
               }
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+              className="btn primary"
             >
-              <Sparkles className="h-4 w-4" />
-              <span>
-                {extracting
-                  ? "Running Receipt OCR..."
-                  : "Extract Receipt Fields for Review"}
-              </span>
+              {extracting
+                ? "Running receipt OCR..."
+                : "Extract receipt fields for review"}
             </button>
 
             <button
@@ -539,25 +496,24 @@ export function AddExpenseView() {
                   simulateFailure: true,
                 })
               }
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+              className="btn"
             >
-              Simulate Blurry Receipt Failure (Test Retry)
+              Simulate blurry receipt failure (test retry)
             </button>
           </div>
         </div>
       )}
 
-      {/* TAB 2: BANK SMS / WHATSAPP NOTIFICATION PARSER */}
+      {/* TAB 2: BANK SMS / WHATSAPP */}
       {activeTab === "sms" && (
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
+        <div className="panel space-y-4">
           <div>
-            <h3 className="text-sm font-bold">
-              Bank SMS, WhatsApp &amp; Card Notification Parser
-            </h3>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-[16px] font-semibold">
+              Bank SMS, WhatsApp &amp; card notification parser
+            </h2>
+            <p className="panel-meta">
               Paste alerts from Emirates NBD, ADCB, FAB, Wio, Mashreq, or Liv.
-              Untrusted message text is sanitized; instructions inside messages
-              are never executed.
+              Untrusted message text is sanitized.
             </p>
           </div>
 
@@ -567,7 +523,7 @@ export function AddExpenseView() {
                 key={sample.label}
                 type="button"
                 onClick={() => setSmsText(sample.text)}
-                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 cursor-pointer"
+                className="btn h-7 px-2.5 text-[12px]"
               >
                 {sample.label}
               </button>
@@ -580,7 +536,7 @@ export function AddExpenseView() {
             value={smsText}
             onChange={(e) => setSmsText(e.target.value)}
             placeholder="Paste bank SMS or WhatsApp transaction message here..."
-            className="w-full rounded-xl bg-slate-950/70 border border-slate-800 p-3 text-xs font-mono"
+            className="input-control"
           />
 
           <button
@@ -593,30 +549,27 @@ export function AddExpenseView() {
                 rawText: smsText,
               })
             }
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Parse Notification &amp; Review</span>
+            Parse notification &amp; review
           </button>
         </div>
       )}
 
-      {/* TAB 3: SCREENSHOT MULTI-ROW IMPORT */}
+      {/* TAB 3: SCREENSHOT MULTI-ROW */}
       {activeTab === "screenshot" && (
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="panel space-y-4">
+          <div className="panel-header">
             <div>
-              <h3 className="text-sm font-bold">
-                Screenshot Multi-Transaction Extractor
-              </h3>
-              <p className="text-xs text-slate-400">
-                Upload screenshots from banking apps, credit card statements, or
-                SMS history to extract multiple rows and check for duplicates.
+              <h2>Screenshot multi-transaction extractor</h2>
+              <p className="panel-meta">
+                Upload screenshots from banking apps, card statements, or SMS
+                history to extract multiple rows and check for duplicates
               </p>
             </div>
-            <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer">
+            <label className="btn primary cursor-pointer">
               <Upload className="h-3.5 w-3.5" />
-              <span>Upload Screenshot Image</span>
+              <span>Upload screenshot image</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -631,7 +584,7 @@ export function AddExpenseView() {
             data-testid="screenshot-ocr-textarea"
             value={screenshotHint}
             onChange={(e) => setScreenshotHint(e.target.value)}
-            className="w-full rounded-xl bg-slate-950/70 border border-slate-800 p-3 text-xs font-mono"
+            className="input-control"
           />
 
           <button
@@ -645,24 +598,23 @@ export function AddExpenseView() {
                 ocrTextHint: screenshotHint,
               })
             }
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Extract Multiple Transactions from Screenshot</span>
+            Extract multiple transactions from screenshot
           </button>
         </div>
       )}
 
-      {/* TAB 5: CSV STATEMENT IMPORT */}
+      {/* TAB 5: CSV STATEMENT */}
       {activeTab === "csv" && (
-        <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
+        <div className="panel space-y-4">
           <div>
-            <h3 className="text-sm font-bold">
-              CSV Bank / Credit Card Statement Import
-            </h3>
-            <p className="text-xs text-slate-400">
+            <h2 className="text-[16px] font-semibold">
+              CSV bank or credit card statement import
+            </h2>
+            <p className="panel-meta">
               Paste or upload CSV statement rows to inspect duplicates and
-              confirm before importing.
+              confirm before importing
             </p>
           </div>
           <textarea
@@ -670,7 +622,7 @@ export function AddExpenseView() {
             data-testid="csv-input-textarea"
             value={csvContent}
             onChange={(e) => setCsvContent(e.target.value)}
-            className="w-full rounded-xl bg-slate-950/70 border border-slate-800 p-3 text-xs font-mono"
+            className="input-control"
           />
           <button
             type="button"
@@ -682,56 +634,52 @@ export function AddExpenseView() {
                 csvContent,
               })
             }
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Parse CSV Rows into Review Table</span>
+            Parse CSV rows into review table
           </button>
         </div>
       )}
 
-      {/* FAILED JOB RETRY BANNER */}
+      {/* FAILED JOB RETRY CARD */}
       {activeJob && activeJob.status === "failed" && (
         <div
           data-testid="failed-extraction-job-card"
-          className="p-5 rounded-2xl bg-rose-950/40 border border-rose-700/60 space-y-3 text-xs"
+          className="panel space-y-3 bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)]"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 font-bold text-rose-300">
-              <AlertTriangle className="h-4 w-4" />
-              <span>Extraction Job Failed ({activeJob.id})</span>
-            </div>
+            <span className="font-semibold">
+              Extraction job failed (<code>{activeJob.id}</code>)
+            </span>
             <button
               type="button"
               data-testid="retry-extraction-job-btn"
               onClick={() => handleRetryFailedJob(activeJob.id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 text-white font-semibold hover:bg-teal-500 cursor-pointer"
+              className="btn primary h-8 px-3 text-[12px]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              <span>Retry Extraction</span>
+              <span>Retry extraction</span>
             </button>
           </div>
-          <p className="text-rose-200">{activeJob.error_message}</p>
+          <p className="text-[13px]">{activeJob.error_message}</p>
         </div>
       )}
 
-      {/* EXTRACTED REVIEW & CONFIRMATION WORKBENCH */}
+      {/* EXTRACTED REVIEW WORKBENCH */}
       {reviewCandidates.length > 0 && (
         <div
           data-testid="extraction-review-workbench"
-          className={`p-5 rounded-2xl border-2 border-teal-500/50 ${cardClass} space-y-5`}
+          className="panel space-y-4"
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="panel-header border-b border-[var(--border)] pb-3">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-300">
-                Review &amp; Edit Before Saving
-              </span>
-              <h3 className="text-base font-bold mt-1">
-                {reviewCandidates.length} Extracted Transaction Candidate(s)
-              </h3>
-              <p className="text-xs text-slate-400">
-                Inspect confidence indicators, resolve any flagged fields, and
-                confirm to save to the database.
+              <h2>
+                Review &amp; edit {reviewCandidates.length} extracted
+                candidate(s)
+              </h2>
+              <p className="panel-meta">
+                Verify confidence indicators, resolve any flagged fields, and
+                confirm to save to the database
               </p>
             </div>
 
@@ -739,7 +687,7 @@ export function AddExpenseView() {
               type="button"
               data-testid="confirm-extracted-save-btn"
               onClick={handleConfirmAndSaveExtracted}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-lg cursor-pointer"
+              className="btn primary"
             >
               <Check className="h-4 w-4" />
               <span>
@@ -749,361 +697,339 @@ export function AddExpenseView() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* Side-by-side original uploaded receipt/screenshot preview when available */}
+          <div className="space-y-4">
             {uploadedPreviewUrl && (
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="text-xs font-semibold text-slate-300">
-                  Original Uploaded Image
+              <div className="p-3 rounded bg-[var(--raised)] border border-[var(--border)]">
+                <div className="text-[12px] font-medium mb-2">
+                  Original uploaded image
                 </div>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={uploadedPreviewUrl}
                   alt="Uploaded receipt preview"
-                  className="max-h-72 mx-auto object-contain rounded"
+                  className="max-h-60 object-contain"
                 />
               </div>
             )}
 
-            <div
-              className={
-                uploadedPreviewUrl
-                  ? "lg:col-span-2 space-y-4"
-                  : "lg:col-span-3 space-y-4"
-              }
-            >
-              {reviewCandidates.map((cand, idx) => {
-                const isSelected = selectedCandidateIds.includes(cand.id);
-                return (
-                  <div
-                    key={cand.id}
-                    data-testid={`review-candidate-${idx}`}
-                    className={`p-4 rounded-xl border space-y-3 ${
-                      cand.duplicate_of_id
-                        ? "border-amber-500/60 bg-amber-950/20"
-                        : "border-slate-800 bg-slate-950/60"
-                    }`}
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() =>
-                            setSelectedCandidateIds((prev) =>
-                              prev.includes(cand.id)
-                                ? prev.filter((id) => id !== cand.id)
-                                : [...prev, cand.id]
-                            )
-                          }
-                        />
-                        <span>
-                          Row #{idx + 1}: {cand.merchant}
-                        </span>
-                      </label>
-
-                      <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                        <span
-                          className={`px-2 py-0.5 rounded-full font-semibold ${
-                            cand.confidence.overall >= 0.85
-                              ? "bg-emerald-500/20 text-emerald-300"
-                              : "bg-amber-500/20 text-amber-300"
-                          }`}
-                        >
-                          OCR Confidence:{" "}
-                          {Math.round(cand.confidence.overall * 100)}%
-                        </span>
-                        {cand.duplicate_of_id && (
-                          <span
-                            data-testid="duplicate-warning-badge"
-                            className="px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-200 font-bold"
-                          >
-                            Potential Duplicate Detected
-                          </span>
-                        )}
-                        {cand.flagged_fields.length > 0 && (
-                          <span className="px-2 py-0.5 rounded-full bg-rose-500/25 text-rose-200 font-semibold">
-                            Flagged for manual review:{" "}
-                            {cand.flagged_fields.join(", ")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Merchant / Payee
-                        </label>
-                        <input
-                          type="text"
-                          data-testid={`candidate-merchant-${idx}`}
-                          value={cand.merchant}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "merchant",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Amount ({cand.currency})
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          data-testid={`candidate-amount-${idx}`}
-                          value={cand.amount}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "amount",
-                              Number(e.target.value)
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          UAE VAT (5%)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={cand.vat_amount ?? 0}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "vat_amount",
-                              Number(e.target.value)
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Date (Asia/Dubai)
-                        </label>
-                        <input
-                          type="date"
-                          value={cand.transaction_date}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "transaction_date",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Transaction Type
-                        </label>
-                        <select
-                          value={cand.transaction_type}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "transaction_type",
-                              e.target.value as TransactionType
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        >
-                          <option value="expense">Expense</option>
-                          <option value="income">Income</option>
-                          <option value="refund">Refund / Reversal</option>
-                          <option value="cc_repayment">
-                            Credit Card Repayment
-                          </option>
-                          <option value="transfer">Transfer</option>
-                        </select>
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Category
-                        </label>
-                        <select
-                          value={cand.category_name}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "category_name",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        >
-                          {state.categories.map((cat) => (
-                            <option key={cat.id} value={cat.name}>
-                              {cat.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Card Ending (Last 4)
-                        </label>
-                        <input
-                          type="text"
-                          maxLength={4}
-                          value={cand.card_last_four || ""}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "card_last_four",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Receipt / Ref #
-                        </label>
-                        <input
-                          type="text"
-                          value={cand.reference_number || ""}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "reference_number",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block text-[10px] text-slate-400 mb-1">
-                          Status
-                        </label>
-                        <select
-                          value={cand.status}
-                          onChange={(e) =>
-                            updateCandidateField(
-                              cand.id,
-                              "status",
-                              e.target.value as TransactionStatus
-                            )
-                          }
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
-                        >
-                          <option value="confirmed">Confirmed</option>
-                          <option value="pending">Pending</option>
-                          <option value="declined">
-                            Declined (Excluded from spend)
-                          </option>
-                          <option value="reversed">Reversed</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {cand.line_items.length > 0 && (
-                      <div className="pt-2 border-t border-slate-800/60 text-[11px] text-slate-400">
-                        <strong className="text-slate-300">
-                          Extracted Line Items:
-                        </strong>{" "}
-                        {cand.line_items
-                          .map(
-                            (li) =>
-                              `${li.quantity}x ${
-                                li.description
-                              } (${formatCurrency(li.total)})`
+            {reviewCandidates.map((cand, idx) => {
+              const isSelected = selectedCandidateIds.includes(cand.id);
+              return (
+                <div
+                  key={cand.id}
+                  data-testid={`review-candidate-${idx}`}
+                  className="p-4 rounded-[6px] bg-[var(--raised)] border border-[var(--border)] space-y-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="flex items-center gap-2 text-[14px] font-semibold cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() =>
+                          setSelectedCandidateIds((prev) =>
+                            prev.includes(cand.id)
+                              ? prev.filter((id) => id !== cand.id)
+                              : [...prev, cand.id]
                           )
-                          .join(" • ")}
-                      </div>
-                    )}
+                        }
+                      />
+                      <span>
+                        Row #{idx + 1}: {cand.merchant}
+                      </span>
+                    </label>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`pill ${
+                          cand.confidence.overall >= 0.85 ? "pos" : "warn"
+                        }`}
+                      >
+                        Confidence {Math.round(cand.confidence.overall * 100)}%
+                      </span>
+                      {cand.duplicate_of_id && (
+                        <span
+                          data-testid="duplicate-warning-badge"
+                          className="pill warn"
+                        >
+                          Potential duplicate detected
+                        </span>
+                      )}
+                      {cand.flagged_fields.length > 0 && (
+                        <span className="pill neg">
+                          Flagged: {cand.flagged_fields.join(", ")}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Merchant / payee
+                      </label>
+                      <input
+                        type="text"
+                        data-testid={`candidate-merchant-${idx}`}
+                        value={cand.merchant}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "merchant",
+                            e.target.value
+                          )
+                        }
+                        className="input-control"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Amount ({cand.currency})
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        data-testid={`candidate-amount-${idx}`}
+                        value={cand.amount}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "amount",
+                            Number(e.target.value)
+                          )
+                        }
+                        className="input-control font-semibold num"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        UAE VAT (5%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={cand.vat_amount ?? 0}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "vat_amount",
+                            Number(e.target.value)
+                          )
+                        }
+                        className="input-control num"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Date (Asia/Dubai)
+                      </label>
+                      <input
+                        type="date"
+                        value={cand.transaction_date}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "transaction_date",
+                            e.target.value
+                          )
+                        }
+                        className="input-control"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Transaction type
+                      </label>
+                      <select
+                        value={cand.transaction_type}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "transaction_type",
+                            e.target.value as TransactionType
+                          )
+                        }
+                        className="input-control"
+                      >
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                        <option value="refund">Refund / Reversal</option>
+                        <option value="cc_repayment">
+                          Credit Card Repayment
+                        </option>
+                        <option value="transfer">Transfer</option>
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Category
+                      </label>
+                      <select
+                        value={cand.category_name}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "category_name",
+                            e.target.value
+                          )
+                        }
+                        className="input-control"
+                      >
+                        {state.categories.map((cat) => (
+                          <option key={cat.id} value={cat.name}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Card ending (last 4)
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={4}
+                        value={cand.card_last_four || ""}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "card_last_four",
+                            e.target.value
+                          )
+                        }
+                        className="input-control num"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Receipt / ref #
+                      </label>
+                      <input
+                        type="text"
+                        value={cand.reference_number || ""}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "reference_number",
+                            e.target.value
+                          )
+                        }
+                        className="input-control"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="block text-[12px] text-[var(--muted)]">
+                        Status
+                      </label>
+                      <select
+                        value={cand.status}
+                        onChange={(e) =>
+                          updateCandidateField(
+                            cand.id,
+                            "status",
+                            e.target.value as TransactionStatus
+                          )
+                        }
+                        className="input-control"
+                      >
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending">Pending</option>
+                        <option value="declined">
+                          Declined (excluded from spend)
+                        </option>
+                        <option value="reversed">Reversed</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {cand.line_items.length > 0 && (
+                    <div className="pt-2 border-t border-[var(--border)] text-[12px] text-[var(--muted)]">
+                      <strong className="text-[var(--text)]">
+                        Extracted line items:
+                      </strong>{" "}
+                      {cand.line_items
+                        .map(
+                          (li) =>
+                            `${li.quantity}x ${
+                              li.description
+                            } (${formatCurrency(li.total)})`
+                        )
+                        .join(" · ")}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* TAB 4: FAST MANUAL ENTRY FORM */}
+      {/* TAB 4: FAST MANUAL ENTRY */}
       {activeTab === "manual" && (
         <form
           onSubmit={handleManualSubmit}
           data-testid="manual-expense-form"
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold">Fast Manual Transaction Form</h3>
-              <p className="text-xs text-slate-400">
-                Supports expenses, salary/income, transfers, refunds, and credit
-                card repayments. Works offline with automatic sync queueing.
-              </p>
-            </div>
+          <div>
+            <h2 className="text-[16px] font-semibold">
+              Fast manual transaction entry
+            </h2>
+            <p className="panel-meta">
+              Supports expenses, salary/income, transfers, refunds, and credit
+              card repayments
+            </p>
           </div>
 
           {manualError && (
             <div
               role="alert"
-              className="p-3 rounded-xl bg-rose-950/60 border border-rose-700 text-rose-200 text-xs flex items-center justify-between"
+              className="p-3 rounded-[6px] bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)] flex items-center justify-between text-[13px]"
             >
               <span>{manualError}</span>
               {allowDuplicateOverride && (
                 <button
                   type="submit"
-                  className="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold cursor-pointer"
+                  className="btn primary h-8 px-3 text-[12px]"
                 >
-                  Save Duplicate Anyway
+                  Save duplicate anyway
                 </button>
               )}
             </div>
           )}
 
-          {/* Transaction Type Pill Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+          <div className="segmented">
             {(
               [
                 { id: "expense", label: "Expense" },
                 { id: "income", label: "Income / Salary" },
-                { id: "cc_repayment", label: "Card Repayment" },
+                { id: "cc_repayment", label: "Card repayment" },
                 { id: "refund", label: "Refund / Reversal" },
-                { id: "transfer", label: "Account Transfer" },
+                { id: "transfer", label: "Account transfer" },
               ] as const
             ).map((t) => (
               <button
                 key={t.id}
                 type="button"
                 data-testid={`manual-type-${t.id}`}
+                aria-pressed={manualType === t.id}
                 onClick={() => setManualType(t.id)}
-                className={`py-2 px-3 rounded-xl font-semibold border transition cursor-pointer ${
-                  manualType === t.id
-                    ? "bg-teal-600 border-teal-500 text-white"
-                    : "bg-slate-950/50 border-slate-800 text-slate-400"
-                }`}
               >
                 {t.label}
               </button>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">Amount *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Amount *</label>
               <input
                 type="number"
                 step="0.01"
@@ -1111,17 +1037,17 @@ export function AddExpenseView() {
                 data-testid="manual-amount-input"
                 value={manualAmount}
                 onChange={(e) => setManualAmount(e.target.value)}
-                placeholder="e.g. 125.50"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold"
+                placeholder="125.50"
+                className="input-control font-semibold num"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">Currency</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Currency</label>
               <select
                 value={manualCurrency}
                 onChange={(e) => setManualCurrency(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 <option value="AED">AED (UAE Dirham)</option>
                 <option value="USD">USD (US Dollar)</option>
@@ -1131,9 +1057,9 @@ export function AddExpenseView() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Merchant / Payee *
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Merchant / payee *
               </label>
               <input
                 type="text"
@@ -1141,18 +1067,18 @@ export function AddExpenseView() {
                 data-testid="manual-merchant-input"
                 value={manualMerchant}
                 onChange={(e) => setManualMerchant(e.target.value)}
-                placeholder="e.g. Spinneys Dubai Marina"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                placeholder="Spinneys Dubai Marina"
+                className="input-control"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">Category</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Category</label>
               <select
                 data-testid="manual-category-select"
                 value={manualCategory}
                 onChange={(e) => setManualCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 {state.categories.map((c) => (
                   <option key={c.id} value={c.name}>
@@ -1162,9 +1088,9 @@ export function AddExpenseView() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Transaction Date (Asia/Dubai)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Transaction date (Asia/Dubai)
               </label>
               <input
                 type="date"
@@ -1172,50 +1098,52 @@ export function AddExpenseView() {
                 data-testid="manual-date-input"
                 value={manualDate}
                 onChange={(e) => setManualDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Time (Optional)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Time (optional)
               </label>
               <input
                 type="time"
                 value={manualTime}
                 onChange={(e) => setManualTime(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">Payment Type</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Payment type
+              </label>
               <select
                 value={manualPaymentMethod}
                 onChange={(e) =>
                   setManualPaymentMethod(e.target.value as PaymentMethod)
                 }
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
-                <option value="credit_card">Credit Card</option>
-                <option value="debit_card">Debit Card</option>
+                <option value="credit_card">Credit card</option>
+                <option value="debit_card">Debit card</option>
                 <option value="apple_pay">Apple Pay</option>
                 <option value="samsung_pay">Samsung Pay</option>
-                <option value="bank_transfer">Bank Transfer</option>
+                <option value="bank_transfer">Bank transfer</option>
                 <option value="cash">Cash</option>
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Selected Card / Account
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Selected card / account
               </label>
               <select
                 value={manualCardId}
                 onChange={(e) => setManualCardId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
-                <option value="">Default Account / None</option>
+                <option value="">Default account / none</option>
                 {state.cards.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.display_name} (••{c.last_four})
@@ -1225,14 +1153,14 @@ export function AddExpenseView() {
             </div>
 
             {manualType === "cc_repayment" && (
-              <div>
-                <label className="block text-teal-400 mb-1">
-                  Target Credit Card Being Repaid
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Target credit card being repaid
                 </label>
                 <select
                   value={manualTargetCardId}
                   onChange={(e) => setManualTargetCardId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-teal-500"
+                  className="input-control"
                 >
                   {state.cards
                     .filter((c) => c.card_type === "credit")
@@ -1245,9 +1173,9 @@ export function AddExpenseView() {
               </div>
             )}
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                UAE VAT Amount (Optional)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                UAE VAT amount (optional)
               </label>
               <input
                 type="number"
@@ -1255,43 +1183,43 @@ export function AddExpenseView() {
                 value={manualVat}
                 onChange={(e) => setManualVat(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Reference / Receipt #
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Reference / receipt #
               </label>
               <input
                 type="text"
                 value={manualRef}
                 onChange={(e) => setManualRef(e.target.value)}
                 placeholder="Optional ref"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
                 Tags (comma separated)
               </label>
               <input
                 type="text"
                 value={manualTags}
                 onChange={(e) => setManualTags(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">Status</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Status</label>
               <select
                 value={manualStatus}
                 onChange={(e) =>
                   setManualStatus(e.target.value as TransactionStatus)
                 }
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 <option value="confirmed">Confirmed</option>
                 <option value="pending">Pending</option>
@@ -1299,14 +1227,14 @@ export function AddExpenseView() {
             </div>
           </div>
 
-          <div className="text-xs">
-            <label className="block text-slate-400 mb-1">Notes</label>
+          <div className="space-y-1">
+            <label className="block text-[13px] font-medium">Notes</label>
             <input
               type="text"
               value={manualNotes}
               onChange={(e) => setManualNotes(e.target.value)}
               placeholder="Optional transaction notes..."
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+              className="input-control"
             />
           </div>
 
@@ -1314,10 +1242,9 @@ export function AddExpenseView() {
             <button
               type="submit"
               data-testid="manual-submit-btn"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow cursor-pointer"
+              className="btn primary"
             >
-              <span>Save Verified Transaction</span>
-              <ArrowRight className="h-4 w-4" />
+              Save verified transaction
             </button>
           </div>
         </form>

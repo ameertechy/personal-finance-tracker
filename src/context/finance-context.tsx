@@ -97,17 +97,21 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   );
   const [syncingQueue, setSyncingQueue] = useState<boolean>(false);
   const [theme, setTheme] = useState<"dark" | "light">(() => {
-    if (typeof window === "undefined") return "dark";
+    if (typeof window === "undefined") return "light";
     const saved = window.localStorage.getItem("dp_theme");
-    return saved === "light" ? "light" : "dark";
+    return saved === "dark" ? "dark" : "light";
   });
 
   const isOffline = browserOffline || simulatedOffline;
 
-  // Register Service Worker & sync DOM theme class
+  // Register Service Worker & sync DOM theme attribute
   useEffect(() => {
     if (typeof window === "undefined") return;
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
 
     const handleOnline = () => setBrowserOffline(false);
     const handleOffline = () => setBrowserOffline(true);
@@ -132,7 +136,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       const next = prev === "dark" ? "light" : "dark";
       if (typeof window !== "undefined") {
         window.localStorage.setItem("dp_theme", next);
-        document.documentElement.classList.toggle("dark", next === "dark");
+        if (next === "dark") {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
       }
       return next;
     });

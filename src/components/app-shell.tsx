@@ -15,61 +15,77 @@ import {
   WifiOff,
   RefreshCw,
   LogOut,
-  ShieldAlert,
-  Sparkles,
-  Calendar,
-  CheckCheck,
+  Menu,
+  X,
 } from "lucide-react";
 import { NavSection, useFinance } from "@/context/finance-context";
 import { formatDubaiDate } from "@/lib/dubai-time";
 
-const NAV_ITEMS: Array<{
-  id: NavSection;
-  label: string;
-  shortLabel: string;
-  icon: React.ComponentType<{ className?: string }>;
+const NAV_GROUPS: Array<{
+  group: string;
+  items: Array<{
+    id: NavSection;
+    label: string;
+    shortLabel: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }>;
 }> = [
   {
-    id: "dashboard",
-    label: "Dashboard",
-    shortLabel: "Dashboard",
-    icon: LayoutDashboard,
+    group: "Ledger & capture",
+    items: [
+      {
+        id: "dashboard",
+        label: "Overview",
+        shortLabel: "Overview",
+        icon: LayoutDashboard,
+      },
+      {
+        id: "transactions",
+        label: "Transactions",
+        shortLabel: "Ledger",
+        icon: ListOrdered,
+      },
+      {
+        id: "add",
+        label: "Add Expense",
+        shortLabel: "Record",
+        icon: PlusCircle,
+      },
+    ],
   },
   {
-    id: "transactions",
-    label: "Transactions",
-    shortLabel: "Ledger",
-    icon: ListOrdered,
+    group: "Obligations & plans",
+    items: [
+      {
+        id: "cards",
+        label: "Cards & Bills",
+        shortLabel: "Cards",
+        icon: CreditCard,
+      },
+      {
+        id: "budgets",
+        label: "Budgets",
+        shortLabel: "Budgets",
+        icon: PieChart,
+      },
+      {
+        id: "reports",
+        label: "Reports",
+        shortLabel: "Reports",
+        icon: BarChart3,
+      },
+    ],
   },
   {
-    id: "add",
-    label: "Add Expense",
-    shortLabel: "Add",
-    icon: PlusCircle,
-  },
-  {
-    id: "cards",
-    label: "Cards & Bills",
-    shortLabel: "Cards",
-    icon: CreditCard,
-  },
-  {
-    id: "budgets",
-    label: "Budgets",
-    shortLabel: "Budgets",
-    icon: PieChart,
-  },
-  {
-    id: "reports",
-    label: "Reports",
-    shortLabel: "Reports",
-    icon: BarChart3,
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    shortLabel: "Settings",
-    icon: Settings,
+    group: "Workspace",
+    items: [
+      {
+        id: "settings",
+        label: "Settings",
+        shortLabel: "Settings",
+        icon: Settings,
+      },
+    ],
   },
 ];
 
@@ -100,11 +116,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     signOut,
   } = useFinance();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
 
   const unreadNotifications =
     state?.notifications.filter((n) => !n.is_read) ?? [];
+
+  const openStatementsCount =
+    state?.statements.filter((s) => s.status !== "paid").length ?? 0;
 
   const handleRequestBrowserPush = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
@@ -120,7 +140,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           preferences: { enable_browser_push: true },
         });
         setPushStatus(
-          "Browser push notifications enabled while app is open/active."
+          "Browser push notifications enabled while browser is open."
         );
       } else {
         setPushStatus(
@@ -132,88 +152,286 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const allItems = NAV_GROUPS.flatMap((g) => g.items);
+  const currentNavLabel =
+    allItems.find((i) => i.id === activeSection)?.label || "Overview";
+
   return (
-    <div
-      className={`min-h-screen flex flex-col md:flex-row ${
-        theme === "dark"
-          ? "bg-slate-950 text-slate-100"
-          : "bg-slate-50 text-slate-900"
-      }`}
-    >
-      {/* Desktop Left Sidebar */}
+    <div className="app-shell">
+      {/* Mobile 48px Top Bar (hidden on desktop) */}
+      <div className="mobile-topbar">
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            aria-label="Open navigation menu"
+            onClick={() => setMobileMenuOpen(true)}
+            className="btn px-2.5 h-8"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+          <span className="font-semibold text-[15px]">{currentNavLabel}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <select
+            aria-label="Select month on mobile"
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="btn h-8 px-2 text-[12px]"
+          >
+            {AVAILABLE_MONTHS.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => setActiveSection("add")}
+            className="btn primary h-8 px-3 text-[12px]"
+          >
+            Record
+          </button>
+        </div>
+      </div>
+
+      {/* Open-Plane Sidebar (sticky on desktop, full-screen sheet on mobile when open) */}
       <aside
-        className={`hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r ${
-          theme === "dark"
-            ? "bg-slate-900/95 border-slate-800"
-            : "bg-white border-slate-200"
-        }`}
+        aria-label="Primary Sidebar Navigation"
+        className={`app-sidebar ${mobileMenuOpen ? "open" : ""}`}
       >
-        <div className="p-5 flex items-center gap-3 border-b border-slate-800/40">
-          <div className="h-10 w-10 rounded-xl bg-teal-600 flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
-            AED
+        {/* Product Mark & Workspace Scope Switcher */}
+        <div className="px-2.5 pb-3 border-b border-[var(--border)] flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 28 28"
+              fill="none"
+              aria-hidden="true"
+              className="shrink-0"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="24"
+                height="24"
+                rx="5"
+                stroke="var(--text)"
+                strokeWidth="1.75"
+              />
+              <path
+                d="M8 9H15.5C18.5 9 20.5 11 20.5 14C20.5 17 18.5 19 15.5 19H8V9Z"
+                stroke="var(--text)"
+                strokeWidth="1.75"
+              />
+              <path
+                d="M6 12.5H17M6 15.5H17"
+                stroke="var(--data-hue)"
+                strokeWidth="1.5"
+              />
+            </svg>
+            <div className="min-w-0">
+              <div className="font-semibold text-[15px] leading-tight truncate">
+                DirhamPulse
+              </div>
+              <div className="text-[12px] text-[var(--muted)] truncate">
+                UAE Personal Ledger · AED
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="font-bold text-base tracking-tight">
-              DirhamPulse
-            </div>
-            <div className="text-[11px] text-slate-400">
-              UAE Personal Finance • GST
-            </div>
+
+          {mobileMenuOpen && (
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="btn px-2 h-8"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Period & Scope Controls in Sidebar */}
+        <div className="px-2 pt-3 pb-1 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <select
+              aria-label="Select Accounting Month"
+              data-testid="month-selector"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="btn flex-1 justify-between text-[13px] h-8 px-2.5"
+            >
+              {AVAILABLE_MONTHS.map((m) => (
+                <option key={m.value} value={m.value}>
+                  Period: {m.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              aria-label="Toggle Light/Dark Theme"
+              onClick={toggleTheme}
+              className="btn h-8 px-2.5"
+              title="Switch light or dark theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-3.5 w-3.5" />
+              ) : (
+                <Moon className="h-3.5 w-3.5" />
+              )}
+            </button>
           </div>
         </div>
 
-        <nav
-          aria-label="Primary Sidebar Navigation"
-          className="flex-1 px-3 py-4 space-y-1"
-        >
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            const active = activeSection === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                data-testid={`nav-${item.id}`}
-                onClick={() => setActiveSection(item.id)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition cursor-pointer ${
-                  active
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : theme === "dark"
-                    ? "text-slate-300 hover:bg-slate-800/80 hover:text-white"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
+        {/* Navigation Groups */}
+        <nav className="flex-1">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.group}>
+              <div className="sidebar-group-label">{group.group}</div>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const active = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      data-testid={`nav-${item.id}`}
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => {
+                        setActiveSection(item.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="nav-item"
+                    >
+                      <span className="flex items-center gap-2.5 truncate">
+                        <Icon className="h-4 w-4 shrink-0" />
+                        <span className="truncate">{item.label}</span>
+                      </span>
+                      {item.id === "cards" && openStatementsCount > 0 && (
+                        <span className="text-[12px] text-[var(--muted)] num">
+                          {openStatementsCount} due
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-800/40 space-y-3 text-xs">
-          <div
-            className={`p-3 rounded-xl border ${
-              theme === "dark"
-                ? "bg-slate-950/70 border-slate-800 text-slate-300"
-                : "bg-slate-100 border-slate-200 text-slate-700"
-            }`}
-          >
-            <div className="font-semibold truncate">
-              {state?.profile.full_name || session?.fullName}
-            </div>
-            <div className="text-[11px] text-slate-400 truncate">
-              {session?.email}
-            </div>
-            <div className="mt-2 flex items-center justify-between text-[11px]">
-              <span className="text-teal-400 font-medium">
-                {state?.profile.default_currency || "AED"} • Asia/Dubai
+        {/* Bottom Utilities: Notifications, Offline Toggle, User Account */}
+        <div className="pt-3 mt-4 border-t border-[var(--border)] space-y-2 px-1">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              aria-label="Open Notifications"
+              data-testid="notification-bell-btn"
+              onClick={() => setNotifOpen((o) => !o)}
+              className="btn flex-1 justify-between h-8 px-2.5 text-[12px]"
+            >
+              <span className="flex items-center gap-1.5">
+                <Bell className="h-3.5 w-3.5" />
+                <span>Alerts</span>
               </span>
+              {unreadNotifications.length > 0 && (
+                <span
+                  data-testid="unread-notification-count"
+                  className="pill warn"
+                >
+                  {unreadNotifications.length} open
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              data-testid="toggle-offline-btn"
+              onClick={() => setSimulatedOffline(!simulatedOffline)}
+              className="btn h-8 px-2.5 text-[12px]"
+              title="Toggle offline queue mode"
+            >
+              <WifiOff className="h-3.5 w-3.5" />
+              <span>{isOffline ? "Offline" : "Online"}</span>
+            </button>
+          </div>
+
+          {notifOpen && (
+            <div className="panel p-3 space-y-2.5">
+              <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
+                <span className="text-[13px] font-semibold">
+                  Notification center
+                </span>
+                {unreadNotifications.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => mutateFinance("mark_notifications_read")}
+                    className="text-[12px] text-[var(--muted)] hover:underline cursor-pointer"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-56 overflow-y-auto space-y-2">
+                {(state?.notifications ?? []).length === 0 ? (
+                  <p className="text-[12px] text-[var(--muted)] py-2">
+                    No active alerts.
+                  </p>
+                ) : (
+                  state?.notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="p-2 rounded bg-[var(--raised)] space-y-1"
+                    >
+                      <div className="text-[12px] font-medium">{n.title}</div>
+                      <p className="text-[12px] text-[var(--muted)] leading-snug">
+                        {n.message}
+                      </p>
+                      <div className="text-[12px] text-[var(--faint)]">
+                        {formatDubaiDate(n.created_at)}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRequestBrowserPush}
+                className="btn w-full h-8 text-[12px]"
+              >
+                Enable browser push reminders
+              </button>
+              {pushStatus && (
+                <p className="text-[12px] text-[var(--muted)]">{pushStatus}</p>
+              )}
+            </div>
+          )}
+
+          <div className="px-2 py-2 rounded-[6px] bg-[var(--raised)] space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[13px] font-medium truncate">
+                {state?.profile.full_name || session?.fullName}
+              </span>
+              {state?.profile.is_demo_mode && (
+                <span data-testid="demo-mode-badge" className="pill">
+                  Demo data
+                </span>
+              )}
+            </div>
+            <div className="flex items-center justify-between text-[12px] text-[var(--muted)]">
+              <span className="truncate">{session?.email}</span>
               <button
                 type="button"
                 onClick={signOut}
-                className="inline-flex items-center gap-1 text-rose-400 hover:text-rose-300 font-medium cursor-pointer"
+                className="inline-flex items-center gap-1 text-[var(--negative)] font-medium cursor-pointer shrink-0"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                <LogOut className="h-3 w-3" />
                 <span>Sign out</span>
               </button>
             </div>
@@ -221,24 +439,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <div className="flex-1 md:pl-64 flex flex-col min-h-screen pb-20 md:pb-8">
-        {/* Offline / Unsynchronized Queue Banner */}
+      {/* Main Canvas */}
+      <main className="app-canvas">
+        {/* Offline / Unsynchronized Queue Notice */}
         {(isOffline || offlineQueue.length > 0) && (
           <div
             role="status"
             data-testid="offline-sync-banner"
-            className="bg-amber-500/15 border-b border-amber-500/40 px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-2 text-amber-200"
+            className="mb-4 p-3 rounded-[6px] bg-[var(--pill-warning-bg)] text-[var(--pill-warning-ink)] border border-[var(--border)] flex flex-wrap items-center justify-between gap-2 text-[13px]"
           >
             <div className="flex items-center gap-2">
-              <WifiOff className="h-4 w-4 text-amber-400 shrink-0" />
+              <WifiOff className="h-4 w-4 shrink-0" />
               <span>
                 {isOffline
-                  ? "Offline Mode Active — Viewing cached shell & local state. New manual transactions are queued safely without data loss."
-                  : `Connection restored — ${offlineQueue.length} queued transaction(s) ready to synchronize.`}
+                  ? "Offline mode active. Viewing cached shell; new manual transactions are queued locally without data loss."
+                  : `Connection restored. ${offlineQueue.length} queued transaction(s) ready to synchronize.`}
               </span>
               {offlineQueue.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-100 font-semibold">
+                <span className="pill warn">
                   {offlineQueue.length} unsynchronized
                 </span>
               )}
@@ -248,9 +466,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <button
                   type="button"
                   onClick={() => setSimulatedOffline(false)}
-                  className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-semibold hover:bg-amber-400 cursor-pointer"
+                  className="btn h-8 px-3 text-[12px]"
                 >
-                  Reconnect Network
+                  Reconnect network
                 </button>
               )}
               {!isOffline && offlineQueue.length > 0 && (
@@ -258,247 +476,28 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   type="button"
                   onClick={syncOfflineQueueNow}
                   disabled={syncingQueue}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-500 cursor-pointer"
+                  className="btn primary h-8 px-3 text-[12px]"
                 >
-                  <RefreshCw
-                    className={`h-3.5 w-3.5 ${
-                      syncingQueue ? "animate-spin" : ""
-                    }`}
-                  />
-                  <span>{syncingQueue ? "Syncing..." : "Sync Now"}</span>
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>{syncingQueue ? "Syncing..." : "Sync now"}</span>
                 </button>
               )}
             </div>
           </div>
         )}
 
-        {/* Top Header */}
-        <header
-          className={`sticky top-0 z-30 border-b backdrop-blur-md px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 ${
-            theme === "dark"
-              ? "bg-slate-950/85 border-slate-800"
-              : "bg-white/90 border-slate-200"
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="md:hidden h-8 w-8 rounded-lg bg-teal-600 flex items-center justify-center text-white font-bold text-xs">
-              AED
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight">
-                  {NAV_ITEMS.find((n) => n.id === activeSection)?.label ||
-                    "Dashboard"}
-                </h1>
-                {state?.profile.is_demo_mode && (
-                  <span
-                    data-testid="demo-mode-badge"
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                  >
-                    <Sparkles className="h-3 w-3" />
-                    <span>Demo Seeded Data</span>
-                  </span>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Asia/Dubai (UTC+4) • Exact Decimal AED Ledger
-              </p>
-            </div>
-          </div>
+        {children}
+      </main>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Month Selector */}
-            <div className="relative flex items-center">
-              <Calendar className="h-3.5 w-3.5 text-teal-400 absolute left-2.5 pointer-events-none" />
-              <select
-                aria-label="Select Accounting Month"
-                data-testid="month-selector"
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(e.target.value)}
-                className={`pl-8 pr-3 py-1.5 rounded-xl text-xs font-medium border focus:outline-none focus:border-teal-500 ${
-                  theme === "dark"
-                    ? "bg-slate-900 border-slate-800 text-slate-100"
-                    : "bg-slate-100 border-slate-300 text-slate-900"
-                }`}
-              >
-                {AVAILABLE_MONTHS.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Offline Simulation Toggle for testing PWA offline resilience */}
-            <button
-              type="button"
-              data-testid="toggle-offline-btn"
-              onClick={() => setSimulatedOffline(!simulatedOffline)}
-              title="Toggle offline mode to test offline queueing & sync"
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer flex items-center gap-1.5 ${
-                isOffline
-                  ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
-                  : theme === "dark"
-                  ? "bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800"
-                  : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              <WifiOff className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">
-                {isOffline ? "Offline" : "Online"}
-              </span>
-            </button>
-
-            {/* In-App Notification Center */}
-            <div className="relative">
-              <button
-                type="button"
-                aria-label="Open Notifications"
-                data-testid="notification-bell-btn"
-                onClick={() => setNotifOpen((o) => !o)}
-                className={`relative p-2 rounded-xl border transition cursor-pointer ${
-                  theme === "dark"
-                    ? "bg-slate-900 border-slate-800 text-slate-200 hover:bg-slate-800"
-                    : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                <Bell className="h-4 w-4" />
-                {unreadNotifications.length > 0 && (
-                  <span
-                    data-testid="unread-notification-count"
-                    className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center"
-                  >
-                    {unreadNotifications.length}
-                  </span>
-                )}
-              </button>
-
-              {notifOpen && (
-                <div
-                  className={`absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border shadow-2xl z-50 p-4 space-y-3 ${
-                    theme === "dark"
-                      ? "bg-slate-900 border-slate-800 text-slate-100"
-                      : "bg-white border-slate-200 text-slate-900"
-                  }`}
-                >
-                  <div className="flex items-center justify-between border-b border-slate-800/40 pb-2">
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-teal-400">
-                        Notification Center
-                      </h3>
-                      <p className="text-[11px] text-slate-400">
-                        Bills, Budget Thresholds &amp; OCR Alerts
-                      </p>
-                    </div>
-                    {unreadNotifications.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => mutateFinance("mark_notifications_read")}
-                        className="text-[11px] text-teal-400 hover:underline flex items-center gap-1 cursor-pointer"
-                      >
-                        <CheckCheck className="h-3.5 w-3.5" />
-                        <span>Mark all read</span>
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                    {(state?.notifications ?? []).length === 0 ? (
-                      <p className="text-xs text-slate-400 py-4 text-center">
-                        No notifications right now.
-                      </p>
-                    ) : (
-                      state?.notifications.map((n) => (
-                        <div
-                          key={n.id}
-                          className={`p-2.5 rounded-xl border text-xs space-y-1 ${
-                            n.severity === "critical"
-                              ? "bg-rose-950/40 border-rose-700/50"
-                              : n.severity === "warning"
-                              ? "bg-amber-950/30 border-amber-700/40"
-                              : theme === "dark"
-                              ? "bg-slate-950/60 border-slate-800"
-                              : "bg-slate-50 border-slate-200"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold">{n.title}</span>
-                            {!n.is_read && (
-                              <span className="h-2 w-2 rounded-full bg-teal-400 shrink-0" />
-                            )}
-                          </div>
-                          <p className="text-slate-400 text-[11px] leading-relaxed">
-                            {n.message}
-                          </p>
-                          <div className="text-[10px] text-slate-500">
-                            {formatDubaiDate(n.created_at)}
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-800/40 space-y-2">
-                    <button
-                      type="button"
-                      onClick={handleRequestBrowserPush}
-                      className="w-full py-1.5 px-3 rounded-xl bg-teal-600/20 border border-teal-500/40 text-teal-300 text-xs font-medium hover:bg-teal-600/30 transition cursor-pointer"
-                    >
-                      Enable Browser Push Reminders
-                    </button>
-                    {pushStatus && (
-                      <p className="text-[11px] text-slate-400">{pushStatus}</p>
-                    )}
-                    <p className="text-[10px] text-slate-400 flex items-start gap-1.5">
-                      <ShieldAlert className="h-3.5 w-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>
-                        Note: Browser push reminders require an active browser
-                        or configured Web Push VAPID scheduler when closed. This
-                        in-app Notification Center is always active as your
-                        reliable fallback.
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Theme Toggle */}
-            <button
-              type="button"
-              aria-label="Toggle Light/Dark Theme"
-              onClick={toggleTheme}
-              className={`p-2 rounded-xl border transition cursor-pointer ${
-                theme === "dark"
-                  ? "bg-slate-900 border-slate-800 text-amber-400 hover:bg-slate-800"
-                  : "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200"
-              }`}
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-        </header>
-
-        {/* Main View Content */}
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto">
-          {children}
-        </main>
-      </div>
-
-      {/* Mobile Bottom Navigation Bar */}
-      <nav
-        aria-label="Mobile Bottom Navigation"
-        className={`md:hidden fixed bottom-0 inset-x-0 z-40 border-t px-1 py-1.5 grid grid-cols-7 gap-0.5 ${
-          theme === "dark"
-            ? "bg-slate-900/95 border-slate-800 backdrop-blur-md"
-            : "bg-white/95 border-slate-200 backdrop-blur-md"
-        }`}
-      >
-        {NAV_ITEMS.map((item) => {
+      {/* Mobile Fixed Bottom Bar (5 core destinations) */}
+      <nav aria-label="Mobile Bottom Navigation" className="mobile-bottom-nav">
+        {[
+          { id: "dashboard" as NavSection, label: "Overview", icon: LayoutDashboard },
+          { id: "transactions" as NavSection, label: "Ledger", icon: ListOrdered },
+          { id: "add" as NavSection, label: "Record", icon: PlusCircle },
+          { id: "cards" as NavSection, label: "Cards", icon: CreditCard },
+          { id: "budgets" as NavSection, label: "Budgets", icon: PieChart },
+        ].map((item) => {
           const Icon = item.icon;
           const active = activeSection === item.id;
           return (
@@ -506,20 +505,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               key={item.id}
               type="button"
               onClick={() => setActiveSection(item.id)}
-              className={`flex flex-col items-center justify-center py-1.5 rounded-xl text-[10px] font-medium transition cursor-pointer ${
-                active
-                  ? "text-teal-400 bg-teal-500/10"
-                  : "text-slate-400 hover:text-slate-200"
+              className={`flex flex-col items-center justify-center py-1.5 rounded text-[12px] font-medium cursor-pointer ${
+                active ? "text-[var(--text)] bg-[var(--active)]" : "text-[var(--muted)]"
               }`}
             >
-              <Icon
-                className={`h-4 w-4 mb-0.5 ${
-                  item.id === "add" ? "text-teal-400" : ""
-                }`}
-              />
-              <span className="truncate max-w-full px-0.5">
-                {item.shortLabel}
-              </span>
+              <Icon className="h-4 w-4 mb-0.5" />
+              <span>{item.label}</span>
             </button>
           );
         })}

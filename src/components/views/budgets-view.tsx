@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import {
-  Wallet,
-  PiggyBank,
-  PieChart,
-  Repeat,
-  Plus,
-  CheckCircle2,
-  AlertTriangle,
-  Check,
-  Trash2,
-} from "lucide-react";
+import { Plus, Check, Trash2 } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
 import {
   calculateAccountingSummary,
@@ -19,9 +9,10 @@ import {
   formatCurrency,
 } from "@/lib/money";
 import { formatDubaiDate, getDubaiToday } from "@/lib/dubai-time";
+import { TastePlanBars } from "@/components/taste-charts";
 
 export function BudgetsView() {
-  const { state, selectedMonth, mutateFinance, theme } = useFinance();
+  const { state, selectedMonth, mutateFinance } = useFinance();
 
   const [salaryAmount, setSalaryAmount] = useState(
     String(state?.profile.monthly_salary || 32000)
@@ -33,22 +24,18 @@ export function BudgetsView() {
     String(state?.profile.monthly_savings_target || 10000)
   );
 
-  // Additional Income Entry
   const [incTitle, setIncTitle] = useState("");
   const [incAmount, setIncAmount] = useState("");
   const [incKind, setIncKind] = useState<
     "salary" | "bonus" | "reimbursement" | "freelance" | "other"
   >("bonus");
 
-  // Budget Form
   const [bdgCategory, setBdgCategory] = useState("Groceries");
   const [bdgIsOverall, setBdgIsOverall] = useState(false);
   const [bdgLimit, setBdgLimit] = useState("2500");
 
-  // Custom Category Form
   const [newCategoryName, setNewCategoryName] = useState("");
 
-  // Recurring Form
   const [recName, setRecName] = useState("");
   const [recAmount, setRecAmount] = useState("");
   const [recFrequency, setRecFrequency] = useState<
@@ -95,7 +82,7 @@ export function BudgetsView() {
     });
     if (res.ok) {
       setStatusMessage(
-        "Updated monthly salary configuration & savings target."
+        "Updated monthly salary configuration and savings target."
       );
     }
   };
@@ -103,6 +90,9 @@ export function BudgetsView() {
   const handleRecordIncome = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!incTitle || !incAmount) return;
+    const payDayPadded = String(
+      Math.min(28, state.profile.salary_payment_day)
+    ).padStart(2, "0"); // taste-skill-ignore: ISO date day formatting
     const res = await mutateFinance("create_transaction", {
       transaction: {
         transaction_type: "income",
@@ -113,9 +103,7 @@ export function BudgetsView() {
         currency: "AED",
         merchant: incTitle,
         category_name: "Salary & Income",
-        transaction_date: `${selectedMonth}-${String(
-          Math.min(28, state.profile.salary_payment_day)
-        ).padStart(2, "0")}`,
+        transaction_date: `${selectedMonth}-${payDayPadded}`,
         payment_method: "bank_transfer",
         account_id: state.accounts[0]?.id ?? null,
         income_kind: incKind,
@@ -191,58 +179,67 @@ export function BudgetsView() {
     }
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
+  const planRows = categoryProgress
+    .filter((c) => c.limitAmount > 0 || c.spentAmount > 0)
+    .map((c) => ({
+      label: c.categoryName,
+      planned: c.limitAmount > 0 ? c.limitAmount : c.spentAmount,
+      spent: c.spentAmount,
+    }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <div className="title-row">
+        <div>
+          <h1>Salary, Budgets &amp; Recurring Commitments</h1>
+          <p className="sub">
+            {formatCurrency(summary.overallBudgetRemaining)} of{" "}
+            {formatCurrency(summary.overallBudgetLimit)} monthly budget remains
+            in {selectedMonth} ({summary.overallBudgetUtilizationPct}% used)
+          </p>
+        </div>
+      </div>
+
       {statusMessage && (
         <div
           role="status"
           data-testid="budgets-status-banner"
-          className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-700 text-emerald-200 text-xs flex items-center gap-2"
+          className="p-3.5 rounded-[6px] bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)] text-[13px]"
         >
-          <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-          <span>{statusMessage}</span>
+          {statusMessage}
         </div>
       )}
 
-      {/* Top Row: Salary & Income Config + Additional Income Entry */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Top Row: Salary & Savings Target (6 cols) + Record Income (6 cols) */}
+      <div className="app-grid top">
         <form
           onSubmit={handleSaveSalaryProfile}
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
+          style={{ gridColumn: "span 6" }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-emerald-400" />
-              <h3 className="text-sm font-bold">
-                Monthly Salary &amp; Savings Target ({selectedMonth})
-              </h3>
-            </div>
-            <span className="text-xs font-bold text-emerald-400">
-              Effective Income: {formatCurrency(summary.effectiveMonthlyIncome)}
+          <div className="panel-header">
+            <h2>Monthly salary &amp; savings target ({selectedMonth})</h2>
+            <span className="font-semibold num">
+              {formatCurrency(summary.effectiveMonthlyIncome)}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Monthly Salary (AED)
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Monthly salary (AED)
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={salaryAmount}
                 onChange={(e) => setSalaryAmount(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold"
+                className="input-control font-semibold num"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Salary Payment Day (1-31)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Payment day (1–31)
               </label>
               <input
                 type="number"
@@ -250,63 +247,52 @@ export function BudgetsView() {
                 max={31}
                 value={salaryDay}
                 onChange={(e) => setSalaryDay(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Monthly Savings Target (AED)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Savings target (AED)
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={savingsTarget}
                 onChange={(e) => setSavingsTarget(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold text-teal-400"
+                className="input-control font-semibold num"
               />
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
-            <div className="flex items-center gap-2 text-slate-400">
-              <PiggyBank className="h-4 w-4 text-teal-400" />
-              <span>
-                Current Month Savings:{" "}
-                <strong className="text-emerald-400">
-                  {formatCurrency(summary.monthlySavings)} (
-                  {summary.savingsRatePct}%)
-                </strong>
-              </span>
-            </div>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold cursor-pointer"
-            >
-              Update Salary &amp; Target
+          <div className="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+            <span className="text-[13px] text-[var(--muted)]">
+              Current savings:{" "}
+              <strong className="text-[var(--text)] num">
+                {formatCurrency(summary.monthlySavings)} (
+                {summary.savingsRatePct}%)
+              </strong>
+            </span>
+            <button type="submit" className="btn primary">
+              Update salary &amp; target
             </button>
           </div>
         </form>
 
-        {/* Record Salary, Bonus, Reimbursement, or Other Income */}
         <form
           onSubmit={handleRecordIncome}
           data-testid="record-income-form"
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
+          style={{ gridColumn: "span 6" }}
         >
-          <div>
-            <h3 className="text-sm font-bold">
-              Record Salary, Bonus, or Reimbursement
-            </h3>
-            <p className="text-xs text-slate-400">
-              Add confirmed salary credits, performance bonuses, expense
-              reimbursements, or freelance income.
-            </p>
+          <div className="panel-header">
+            <h2>Record salary, bonus, or reimbursement</h2>
+            <span className="panel-meta">Confirmed income entry</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Income Description *
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Description *
               </label>
               <input
                 type="text"
@@ -314,12 +300,14 @@ export function BudgetsView() {
                 data-testid="income-title-input"
                 value={incTitle}
                 onChange={(e) => setIncTitle(e.target.value)}
-                placeholder="e.g. Q4 Performance Bonus"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                placeholder="Q4 Performance Bonus"
+                className="input-control"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Amount (AED) *</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Amount (AED) *
+              </label>
               <input
                 type="number"
                 step="0.01"
@@ -328,72 +316,64 @@ export function BudgetsView() {
                 value={incAmount}
                 onChange={(e) => setIncAmount(e.target.value)}
                 placeholder="5000.00"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold"
+                className="input-control font-semibold num"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Income Source</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Income source
+              </label>
               <select
                 value={incKind}
-                onChange={(e) =>
-                  setIncKind(e.target.value as typeof incKind)
-                }
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                onChange={(e) => setIncKind(e.target.value as typeof incKind)}
+                className="input-control"
               >
-                <option value="salary">Monthly Salary</option>
+                <option value="salary">Monthly salary</option>
                 <option value="bonus">Bonus</option>
                 <option value="reimbursement">Reimbursement</option>
                 <option value="freelance">Additional / Freelance</option>
-                <option value="other">Other Income</option>
+                <option value="other">Other income</option>
               </select>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2 border-t border-[var(--border)]">
             <button
               type="submit"
               data-testid="submit-income-btn"
-              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer"
+              className="btn primary"
             >
-              + Add Confirmed Income
+              + Add confirmed income
             </button>
           </div>
         </form>
       </div>
 
-      {/* Category Budgets & Alert Thresholds (50%, 75%, 90%, 100%) */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-5`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Category Budgets & Threshold Warnings */}
+      <section className="panel space-y-5">
+        <div className="panel-header">
           <div>
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <PieChart className="h-4 w-4 text-teal-400" />
-              <span>
-                Monthly &amp; Category Budgets ({selectedMonth}) — Configurable
-                50% / 75% / 90% / 100% Warnings
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400">
-              Overall Monthly Budget:{" "}
-              <strong>{formatCurrency(summary.overallBudgetLimit)}</strong> •
-              Spent: <strong>{formatCurrency(summary.netExpenses)}</strong> •
-              Remaining:{" "}
-              <strong className="text-teal-400">
-                {formatCurrency(summary.overallBudgetRemaining)}
-              </strong>
+            <h2>
+              Monthly &amp; category budgets ({selectedMonth}) · 50% / 75% /
+              90% / 100% alerts
+            </h2>
+            <p className="panel-meta">
+              Overall budget {formatCurrency(summary.overallBudgetLimit)} ·
+              Spent {formatCurrency(summary.netExpenses)} · Remaining{" "}
+              {formatCurrency(summary.overallBudgetRemaining)}
             </p>
           </div>
         </div>
 
-        {/* Upsert Budget + Custom Category Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2 border-t border-slate-800/50">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-2 border-t border-[var(--border)]">
           <form
             onSubmit={handleSaveBudget}
             data-testid="upsert-budget-form"
-            className="lg:col-span-2 flex flex-wrap items-end gap-2.5 text-xs"
+            className="lg:col-span-2 flex flex-wrap items-end gap-2.5"
           >
-            <div className="flex-1 min-w-[160px]">
-              <label className="block text-slate-400 mb-1">
-                Category or Overall
+            <div className="flex-1 min-w-[180px] space-y-1">
+              <label className="block text-[13px] font-medium">
+                Category or overall
               </label>
               <select
                 data-testid="budget-category-select"
@@ -406,7 +386,7 @@ export function BudgetsView() {
                     setBdgCategory(e.target.value);
                   }
                 }}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 <option value="__overall__">Overall Monthly Budget</option>
                 {state.categories
@@ -418,9 +398,9 @@ export function BudgetsView() {
                   ))}
               </select>
             </div>
-            <div className="w-40">
-              <label className="block text-slate-400 mb-1">
-                Monthly Limit (AED)
+            <div className="w-44 space-y-1">
+              <label className="block text-[13px] font-medium">
+                Monthly limit (AED)
               </label>
               <input
                 type="number"
@@ -429,125 +409,58 @@ export function BudgetsView() {
                 data-testid="budget-limit-input"
                 value={bdgLimit}
                 onChange={(e) => setBdgLimit(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold"
+                className="input-control font-semibold num"
               />
             </div>
             <button
               type="submit"
               data-testid="save-budget-btn"
-              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold cursor-pointer"
+              className="btn primary"
             >
-              Set Budget Limit
+              Set budget limit
             </button>
           </form>
 
           <form
             onSubmit={handleAddCustomCategory}
-            className="flex items-end gap-2 text-xs"
+            className="flex items-end gap-2"
           >
-            <div className="flex-1">
-              <label className="block text-slate-400 mb-1">
-                New Custom Category
+            <div className="flex-1 space-y-1">
+              <label className="block text-[13px] font-medium">
+                New custom category
               </label>
               <input
                 type="text"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="e.g. Salik & Parking"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                placeholder="Salik & Parking"
+                className="input-control"
               />
             </div>
-            <button
-              type="submit"
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold cursor-pointer"
-            >
+            <button type="submit" className="btn">
               + Category
             </button>
           </form>
         </div>
 
-        {/* Category Budget Progress Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {categoryProgress.map((cp) => (
-            <div
-              key={cp.categoryName}
-              data-testid={`budget-card-${cp.categoryName}`}
-              className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-bold">{cp.categoryName}</span>
-                <div className="flex items-center gap-2">
-                  {cp.activeThresholdWarning && (
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        cp.activeThresholdWarning >= 90
-                          ? "bg-rose-500/25 text-rose-300"
-                          : "bg-amber-500/25 text-amber-300"
-                      }`}
-                    >
-                      <AlertTriangle className="h-3 w-3" />
-                      <span>{cp.activeThresholdWarning}% Warning</span>
-                    </span>
-                  )}
-                  <span className="font-semibold">
-                    {formatCurrency(cp.spentAmount)} /{" "}
-                    {cp.limitAmount > 0
-                      ? formatCurrency(cp.limitAmount)
-                      : "No cap"}
-                  </span>
-                </div>
-              </div>
+        <TastePlanBars rows={planRows} />
+      </section>
 
-              {cp.limitAmount > 0 && (
-                <>
-                  <div className="h-2.5 rounded-full bg-slate-800 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        cp.utilizationPct >= 100
-                          ? "bg-rose-500"
-                          : cp.utilizationPct >= 90
-                          ? "bg-orange-500"
-                          : cp.utilizationPct >= 75
-                          ? "bg-amber-400"
-                          : "bg-teal-500"
-                      }`}
-                      style={{ width: `${Math.min(100, cp.utilizationPct)}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[11px] text-slate-400">
-                    <span>Utilization: {cp.utilizationPct}%</span>
-                    <span>
-                      Remaining: {formatCurrency(cp.remainingAmount)}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recurring Expenses & Scheduled Commitments */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-4`}>
-        <div className="flex items-center justify-between">
+      {/* Recurring Commitments Table */}
+      <section className="panel space-y-4">
+        <div className="panel-header">
           <div>
-            <h3 className="text-sm font-bold flex items-center gap-2">
-              <Repeat className="h-4 w-4 text-teal-400" />
-              <span>
-                Recurring Expenses, Salary Schedules &amp; Reminders
-              </span>
-            </h3>
-            <p className="text-xs text-slate-400">
-              Scheduled items are strictly separated from confirmed transactions
-              until you click &ldquo;Confirm Paid&rdquo;.
+            <h2>Recurring expenses, salary schedules &amp; reminders</h2>
+            <p className="panel-meta">
+              Scheduled items are kept separate from confirmed spending until
+              you click Confirm paid
             </p>
           </div>
         </div>
 
-        {/* Add Recurring Item Form */}
         <form
           onSubmit={handleCreateRecurring}
-          className="grid grid-cols-1 sm:grid-cols-5 gap-2.5 text-xs pt-2"
+          className="grid grid-cols-1 sm:grid-cols-5 gap-2.5"
         >
           <input
             type="text"
@@ -555,7 +468,7 @@ export function BudgetsView() {
             value={recName}
             onChange={(e) => setRecName(e.target.value)}
             placeholder="Name (e.g. Du Home Internet)"
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+            className="input-control"
           />
           <input
             type="number"
@@ -564,14 +477,14 @@ export function BudgetsView() {
             value={recAmount}
             onChange={(e) => setRecAmount(e.target.value)}
             placeholder="Amount (AED)"
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+            className="input-control num"
           />
           <select
             value={recFrequency}
             onChange={(e) =>
               setRecFrequency(e.target.value as typeof recFrequency)
             }
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+            className="input-control"
           >
             <option value="monthly">Monthly</option>
             <option value="weekly">Weekly</option>
@@ -582,78 +495,79 @@ export function BudgetsView() {
             type="date"
             value={recDueDate}
             onChange={(e) => setRecDueDate(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+            className="input-control"
           />
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer"
-          >
+          <button type="submit" className="btn primary">
             <Plus className="h-3.5 w-3.5" />
-            <span>Add Recurring</span>
+            <span>Add recurring</span>
           </button>
         </form>
 
-        <div className="space-y-2.5 pt-2">
-          {state.recurring.map((rec) => (
-            <div
-              key={rec.id}
-              data-testid={`recurring-row-${rec.id}`}
-              className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs"
-            >
-              <div>
-                <div className="font-bold flex items-center gap-2">
-                  <span>{rec.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 uppercase">
-                    {rec.frequency} • {rec.kind}
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5">
-                  Category: {rec.category_name} • Next Due:{" "}
-                  <strong className="text-slate-200">
-                    {formatDubaiDate(rec.next_due_date)}
-                  </strong>{" "}
-                  • Reminders: {rec.reminder_days_before.join("d, ")}d before
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <span className="font-bold text-sm">
-                  {formatCurrency(rec.amount, rec.currency)}
-                </span>
-                <button
-                  type="button"
-                  data-testid={`confirm-recurring-btn-${rec.id}`}
-                  onClick={async () => {
-                    const res = await mutateFinance("confirm_recurring", {
-                      id: rec.id,
-                    });
-                    if (res.ok) {
-                      setStatusMessage(
-                        `Confirmed ${rec.name} (${formatCurrency(
-                          rec.amount
-                        )}) and advanced next due date.`
-                      );
-                    }
-                  }}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-teal-600/20 border border-teal-500/40 text-teal-300 font-semibold hover:bg-teal-600/30 cursor-pointer"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span>Confirm Paid</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    mutateFinance("delete_recurring", { id: rec.id })
-                  }
-                  className="p-1.5 rounded-lg bg-rose-950/60 text-rose-400 hover:bg-rose-900/60 cursor-pointer"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          ))}
+        <div className="table-wrap">
+          <table className="ledger-table">
+            <thead>
+              <tr>
+                <th>Commitment</th>
+                <th>Category &amp; frequency</th>
+                <th>Next due date (GST)</th>
+                <th>Reminders</th>
+                <th className="n">Amount</th>
+                <th className="n">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.recurring.map((rec) => (
+                <tr key={rec.id} data-testid={`recurring-row-${rec.id}`}>
+                  <td className="font-medium">{rec.name}</td>
+                  <td className="text-[var(--muted)]">
+                    {rec.category_name} · {rec.frequency} ({rec.kind})
+                  </td>
+                  <td className="num">{formatDubaiDate(rec.next_due_date)}</td>
+                  <td className="text-[var(--muted)]">
+                    {rec.reminder_days_before.join("d, ")}d before
+                  </td>
+                  <td className="n font-semibold">
+                    {formatCurrency(rec.amount, rec.currency)}
+                  </td>
+                  <td className="n">
+                    <div className="inline-flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        data-testid={`confirm-recurring-btn-${rec.id}`}
+                        onClick={async () => {
+                          const res = await mutateFinance("confirm_recurring", {
+                            id: rec.id,
+                          });
+                          if (res.ok) {
+                            setStatusMessage(
+                              `Confirmed ${rec.name} (${formatCurrency(
+                                rec.amount
+                              )}) and advanced next due date.`
+                            );
+                          }
+                        }}
+                        className="btn h-7 px-2.5 text-[12px]"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        <span>Confirm paid</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          mutateFinance("delete_recurring", { id: rec.id })
+                        }
+                        className="btn danger h-7 px-2 text-[12px]"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

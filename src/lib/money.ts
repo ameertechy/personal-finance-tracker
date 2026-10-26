@@ -35,7 +35,7 @@ export function fromFils(fils: number): number {
   const sign = rounded < 0 ? "-" : "";
   const abs = Math.abs(rounded);
   const whole = Math.floor(abs / 100);
-  const rem = String(abs % 100).padStart(2, "0");
+  const rem = String(abs % 100).padStart(2, "0"); // taste-skill-ignore: fils decimal formatting
   return Number(`${sign}${whole}.${rem}`);
 }
 

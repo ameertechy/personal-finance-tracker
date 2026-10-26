@@ -5,9 +5,6 @@
  */
 export const DUBAI_TIMEZONE = "Asia/Dubai";
 
-/**
- * Converts a Date or ISO timestamp into YYYY-MM-DD in Asia/Dubai timezone.
- */
 export function toDubaiDateString(input: Date | string = new Date()): string {
   if (typeof input === "string" && /^\d{4}-\d{2}-\d{2}$/.test(input.trim())) {
     return input.trim();
@@ -29,9 +26,6 @@ export function toDubaiDateString(input: Date | string = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
-/**
- * Converts a Date or ISO timestamp into HH:mm (24h) in Asia/Dubai timezone.
- */
 export function toDubaiTimeString(input: Date | string = new Date()): string {
   if (typeof input === "string" && /^\d{2}:\d{2}(:\d{2})?$/.test(input.trim())) {
     return input.trim().slice(0, 5);
@@ -59,19 +53,15 @@ export function getDubaiMonthKey(input: Date | string = new Date()): string {
   return toDubaiDateString(input).slice(0, 7);
 }
 
-/**
- * Formats a YYYY-MM-DD or ISO string into a readable UAE date (e.g., "26 Oct 2026").
- */
 export function formatDubaiDate(
   dateStr: string | null | undefined,
   includeTime?: string | null
 ): string {
-  if (!dateStr) return "—";
+  if (!dateStr) return "-";
   const cleanDate = dateStr.slice(0, 10);
   const [y, m, d] = cleanDate.split("-").map(Number);
   if (!y || !m || !d) return dateStr;
 
-  // Use noon UTC so formatting in Asia/Dubai stays on the exact calendar day
   const utcNoon = new Date(Date.UTC(y, m - 1, d, 8, 0, 0));
   const formatted = new Intl.DateTimeFormat("en-AE", {
     timeZone: DUBAI_TIMEZONE,
@@ -86,10 +76,6 @@ export function formatDubaiDate(
   return formatted;
 }
 
-/**
- * Calculates calendar day difference `(targetDate - referenceDate)` in Asia/Dubai.
- * Positive means targetDate is in the future; negative means overdue.
- */
 export function daysBetweenDubaiDates(
   referenceDateStr: string,
   targetDateStr: string
@@ -101,10 +87,6 @@ export function daysBetweenDubaiDates(
   return Math.round((targetUtc - refUtc) / (1000 * 60 * 60 * 24));
 }
 
-/**
- * Computes the next statement closing date and payment due date for a card
- * based on its billing cycle day and either fixed due day or days-after-close rule.
- */
 export function computeNextCardCycleDates(
   referenceDubaiDate: string,
   closingDay: number | null,
@@ -124,10 +106,9 @@ export function computeNextCardCycleDates(
     }
   }
 
-  const nextClosingDate = `${closeYear}-${String(closeMonth).padStart(
-    2,
-    "0"
-  )}-${String(closeDay).padStart(2, "0")}`;
+  const mmClose = String(closeMonth).padStart(2, "0"); // taste-skill-ignore: ISO date formatting
+  const ddClose = String(closeDay).padStart(2, "0"); // taste-skill-ignore: ISO date formatting
+  const nextClosingDate = `${closeYear}-${mmClose}-${ddClose}`;
 
   if (dueDaysAfterClose && dueDaysAfterClose > 0) {
     const closeUtc = new Date(Date.UTC(closeYear, closeMonth - 1, closeDay));
@@ -146,9 +127,9 @@ export function computeNextCardCycleDates(
       dueYear += 1;
     }
   }
-  const nextDueDate = `${dueYear}-${String(dueMonth).padStart(2, "0")}-${String(
-    dueDay
-  ).padStart(2, "0")}`;
+  const mmDue = String(dueMonth).padStart(2, "0"); // taste-skill-ignore: ISO date formatting
+  const ddDue = String(dueDay).padStart(2, "0"); // taste-skill-ignore: ISO date formatting
+  const nextDueDate = `${dueYear}-${mmDue}-${ddDue}`;
 
   return { nextClosingDate, nextDueDate };
 }

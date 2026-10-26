@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  CreditCard,
-  Landmark,
-  Plus,
-  CheckCircle2,
-  AlertTriangle,
-  ShieldCheck,
-  CalendarClock,
-  ArrowRight,
-  Receipt,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { useFinance } from "@/context/finance-context";
 import {
   calculateCardOutstanding,
@@ -28,7 +18,7 @@ import {
 import { AccountType, CardNetwork, CardType } from "@/lib/types";
 
 export function CardsBillsView() {
-  const { state, mutateFinance, theme } = useFinance();
+  const { state, mutateFinance } = useFinance();
 
   const [showAddCard, setShowAddCard] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
@@ -38,7 +28,6 @@ export function CardsBillsView() {
     text: string;
   } | null>(null);
 
-  // Add Card Form
   const [cardDisplayName, setCardDisplayName] = useState("");
   const [cardBankName, setCardBankName] = useState("Emirates NBD");
   const [cardType, setCardType] = useState<CardType>("credit");
@@ -50,7 +39,6 @@ export function CardsBillsView() {
   const [cardOpeningBalance, setCardOpeningBalance] = useState("0");
   const [cardIsManual, setCardIsManual] = useState(false);
 
-  // Add Account Form
   const [accDisplayName, setAccDisplayName] = useState("");
   const [accBankName, setAccBankName] = useState("ADCB");
   const [accType, setAccType] = useState<AccountType>("checking");
@@ -59,7 +47,6 @@ export function CardsBillsView() {
   const [accManualBalance, setAccManualBalance] = useState("10000");
   const [accIsVerified, setAccIsVerified] = useState(true);
 
-  // Add Statement Form
   const [stmtCardId, setStmtCardId] = useState("");
   const [stmtPeriod, setStmtPeriod] = useState("16 Oct 2026 – 15 Nov 2026");
   const [stmtStart, setStmtStart] = useState("2026-10-16");
@@ -68,7 +55,6 @@ export function CardsBillsView() {
   const [stmtBalance, setStmtBalance] = useState("");
   const stmtMinDue = "100";
 
-  // Record Repayment Form
   const [payCardId, setPayCardId] = useState("");
   const [payStatementId, setPayStatementId] = useState("");
   const [payAccountId, setPayAccountId] = useState("");
@@ -220,22 +206,28 @@ export function CardsBillsView() {
     setPayRef("");
   };
 
-  const cardClass =
-    theme === "dark"
-      ? "bg-slate-900/90 border-slate-800 text-slate-100"
-      : "bg-white border-slate-200 text-slate-900 shadow-sm";
+  const totalOutFils = creditCards.reduce(
+    (acc, c) => acc + toFils(calculateCardOutstanding(c, state.transactions)),
+    0
+  );
+  const totalLimitFils = creditCards.reduce(
+    (acc, c) => acc + toFils(c.credit_limit ?? 0),
+    0
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header & Security Guarantee */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-4">
+      <div className="title-row">
         <div>
-          <h2 className="text-lg font-bold">
-            Banks, Debit/Credit Cards &amp; Statement Bills
-          </h2>
-          <p className="text-xs text-slate-400">
-            Track card utilization, billing cycles, statement balances, and
-            partial/full repayments.
+          <h1>Cards, Bank Accounts &amp; Statement Bills</h1>
+          <p className="sub">
+            Total credit card liability is{" "}
+            {formatCurrency(fromFils(totalOutFils))} across{" "}
+            {creditCards.length} credit cards (
+            {totalLimitFils > 0
+              ? `${((totalOutFils / totalLimitFils) * 100).toFixed(1)}% utilization`
+              : "0% utilization"}
+            ). Only last 4 digits are stored.
           </p>
         </div>
 
@@ -244,19 +236,18 @@ export function CardsBillsView() {
             type="button"
             data-testid="open-add-account-btn"
             onClick={() => setShowAddAccount((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold cursor-pointer"
+            className="btn"
           >
-            <Landmark className="h-3.5 w-3.5" />
-            <span>Add Bank Account</span>
+            Add bank account
           </button>
           <button
             type="button"
             data-testid="open-add-card-btn"
             onClick={() => setShowAddCard((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold cursor-pointer"
+            className="btn primary"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Add Debit / Credit Card</span>
+            <span>Add debit or credit card</span>
           </button>
         </div>
       </div>
@@ -265,18 +256,13 @@ export function CardsBillsView() {
         <div
           role="status"
           data-testid="cards-feedback-banner"
-          className={`p-3.5 rounded-2xl border text-xs flex items-center gap-2 ${
+          className={`p-3.5 rounded-[6px] text-[13px] ${
             feedback.type === "success"
-              ? "bg-emerald-950/60 border-emerald-700 text-emerald-200"
-              : "bg-rose-950/60 border-rose-700 text-rose-200"
+              ? "bg-[var(--pill-positive-bg)] text-[var(--pill-positive-ink)]"
+              : "bg-[var(--pill-negative-bg)] text-[var(--pill-negative-ink)]"
           }`}
         >
-          {feedback.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-          ) : (
-            <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
-          )}
-          <span>{feedback.text}</span>
+          {feedback.text}
         </div>
       )}
 
@@ -285,22 +271,17 @@ export function CardsBillsView() {
         <form
           onSubmit={handleCreateCard}
           data-testid="add-card-form"
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-4"
         >
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold">
-              Register Debit or Credit Card (Safe Identifiers Only)
-            </h3>
-            <span className="text-[11px] text-teal-400 flex items-center gap-1">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Only Last 4 Digits Stored — Never Full PAN/CVV</span>
-            </span>
+          <div className="panel-header">
+            <h2>Register debit or credit card (safe identifiers only)</h2>
+            <span className="pill">Last 4 digits only · Never full PAN/CVV</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Card Display Name *
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Card display name *
               </label>
               <input
                 type="text"
@@ -308,38 +289,40 @@ export function CardsBillsView() {
                 data-testid="card-display-name-input"
                 value={cardDisplayName}
                 onChange={(e) => setCardDisplayName(e.target.value)}
-                placeholder="e.g. ADCB Traveller World"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                placeholder="ADCB Traveller World"
+                className="input-control"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Bank Name *</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Bank name *
+              </label>
               <input
                 type="text"
                 required
                 value={cardBankName}
                 onChange={(e) => setCardBankName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Card Type</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Card type</label>
               <select
                 value={cardType}
                 onChange={(e) => setCardType(e.target.value as CardType)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
-                <option value="credit">Credit Card</option>
-                <option value="debit">Debit Card</option>
-                <option value="prepaid">Prepaid Card</option>
+                <option value="credit">Credit card</option>
+                <option value="debit">Debit card</option>
+                <option value="prepaid">Prepaid card</option>
               </select>
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Network</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">Network</label>
               <select
                 value={cardNetwork}
                 onChange={(e) => setCardNetwork(e.target.value as CardNetwork)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 <option value="Visa">Visa</option>
                 <option value="Mastercard">Mastercard</option>
@@ -347,9 +330,9 @@ export function CardsBillsView() {
                 <option value="Jaywan">Jaywan (UAE)</option>
               </select>
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Last 4 Digits Only *
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Last 4 digits only *
               </label>
               <input
                 type="text"
@@ -358,26 +341,26 @@ export function CardsBillsView() {
                 data-testid="card-last-four-input"
                 value={cardLastFour}
                 onChange={(e) => setCardLastFour(e.target.value)}
-                placeholder="e.g. 5512"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-mono"
+                placeholder="5512"
+                className="input-control num"
               />
             </div>
             {cardType === "credit" && (
               <>
-                <div>
-                  <label className="block text-slate-400 mb-1">
-                    Credit Limit (AED)
+                <div className="space-y-1">
+                  <label className="block text-[13px] font-medium">
+                    Credit limit (AED)
                   </label>
                   <input
                     type="number"
                     value={cardLimit}
                     onChange={(e) => setCardLimit(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                    className="input-control num"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 mb-1">
-                    Statement Closing Day (1-28)
+                <div className="space-y-1">
+                  <label className="block text-[13px] font-medium">
+                    Statement closing day (1–28)
                   </label>
                   <input
                     type="number"
@@ -385,12 +368,12 @@ export function CardsBillsView() {
                     max={28}
                     value={cardCloseDay}
                     onChange={(e) => setCardCloseDay(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                    className="input-control num"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-400 mb-1">
-                    Payment Due Day (1-28)
+                <div className="space-y-1">
+                  <label className="block text-[13px] font-medium">
+                    Payment due day (1–28)
                   </label>
                   <input
                     type="number"
@@ -398,27 +381,27 @@ export function CardsBillsView() {
                     max={28}
                     value={cardDueDay}
                     onChange={(e) => setCardDueDay(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                    className="input-control num"
                   />
                 </div>
               </>
             )}
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Opening Balance (AED)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Opening balance (AED)
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={cardOpeningBalance}
                 onChange={(e) => setCardOpeningBalance(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+            <label className="flex items-center gap-2 text-[13px] text-[var(--muted)] cursor-pointer">
               <input
                 type="checkbox"
                 checked={cardIsManual}
@@ -432,9 +415,9 @@ export function CardsBillsView() {
             <button
               type="submit"
               data-testid="submit-new-card-btn"
-              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold cursor-pointer"
+              className="btn primary"
             >
-              Save Card
+              Save card
             </button>
           </div>
         </form>
@@ -442,52 +425,55 @@ export function CardsBillsView() {
 
       {/* Add Bank Account Form */}
       {showAddAccount && (
-        <form
-          onSubmit={handleCreateAccount}
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
-        >
-          <h3 className="text-sm font-bold">Register UAE Bank Account</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Account Display Name *
+        <form onSubmit={handleCreateAccount} className="panel space-y-4">
+          <h2 className="text-[16px] font-semibold">
+            Register UAE bank account
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Account display name *
               </label>
               <input
                 type="text"
                 required
                 value={accDisplayName}
                 onChange={(e) => setAccDisplayName(e.target.value)}
-                placeholder="e.g. ADCB Active Saver"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                placeholder="ADCB Active Saver"
+                className="input-control"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Bank Name *</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Bank name *
+              </label>
               <input
                 type="text"
                 required
                 value={accBankName}
                 onChange={(e) => setAccBankName(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">Account Type</label>
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Account type
+              </label>
               <select
                 value={accType}
                 onChange={(e) => setAccType(e.target.value as AccountType)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
-                <option value="salary">Salary Account</option>
+                <option value="salary">Salary account</option>
                 <option value="checking">Current / Checking</option>
                 <option value="savings">Savings</option>
-                <option value="wallet">Digital Wallet</option>
+                <option value="wallet">Digital wallet</option>
                 <option value="cash">Cash</option>
               </select>
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Last 4 Digits (Optional)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Last 4 digits (optional)
               </label>
               <input
                 type="text"
@@ -495,36 +481,36 @@ export function CardsBillsView() {
                 value={accLastFour}
                 onChange={(e) => setAccLastFour(e.target.value)}
                 placeholder="1234"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Opening Balance (AED)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Opening balance (AED)
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={accOpeningBalance}
                 onChange={(e) => setAccOpeningBalance(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Verified Actual Bank Balance (AED)
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Verified actual bank balance (AED)
               </label>
               <input
                 type="number"
                 step="0.01"
                 value={accManualBalance}
                 onChange={(e) => setAccManualBalance(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control num"
               />
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs text-slate-300">
+            <label className="flex items-center gap-2 text-[13px] text-[var(--muted)]">
               <input
                 type="checkbox"
                 checked={accIsVerified}
@@ -532,178 +518,149 @@ export function CardsBillsView() {
               />
               <span>Mark as manually verified actual bank balance</span>
             </label>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-teal-600 text-white text-xs font-bold cursor-pointer"
-            >
-              Save Bank Account
+            <button type="submit" className="btn primary">
+              Save bank account
             </button>
           </div>
         </form>
       )}
 
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {state.cards.map((card) => {
-          const outBal = calculateCardOutstanding(card, state.transactions);
-          const limit = card.credit_limit ?? 0;
-          const availCredit =
-            card.card_type === "credit"
-              ? Math.max(0, fromFils(toFils(limit) - toFils(outBal)))
-              : null;
-          const utilPct =
-            card.card_type === "credit" && limit > 0
-              ? Number(((outBal / limit) * 100).toFixed(1))
-              : 0;
-          const cycleDates = computeNextCardCycleDates(
-            today,
-            card.billing_cycle_closing_day,
-            card.payment_due_day,
-            card.due_date_rule_days_after_close
-          );
+      {/* Registered Cards Ledger Table */}
+      <section className="panel p-0 overflow-hidden">
+        <div className="p-5 pb-3 panel-header mb-0">
+          <h2>Registered debit &amp; credit cards</h2>
+          <span className="panel-meta">
+            Distinguishes calculated ledger balances from manual overrides
+          </span>
+        </div>
+        <div className="table-wrap">
+          <table className="ledger-table">
+            <thead>
+              <tr>
+                <th>Card &amp; bank</th>
+                <th>Network &amp; type</th>
+                <th>Balance source</th>
+                <th>Next closing &amp; due date</th>
+                <th className="n">Available credit</th>
+                <th className="n">Utilization</th>
+                <th className="n">Outstanding balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.cards.map((card) => {
+                const outBal = calculateCardOutstanding(
+                  card,
+                  state.transactions
+                );
+                const limit = card.credit_limit ?? 0;
+                const availCredit =
+                  card.card_type === "credit"
+                    ? Math.max(0, fromFils(toFils(limit) - toFils(outBal)))
+                    : null;
+                const utilPct =
+                  card.card_type === "credit" && limit > 0
+                    ? Number(((outBal / limit) * 100).toFixed(1))
+                    : 0;
+                const cycleDates = computeNextCardCycleDates(
+                  today,
+                  card.billing_cycle_closing_day,
+                  card.payment_due_day,
+                  card.due_date_rule_days_after_close
+                );
 
-          return (
-            <div
-              key={card.id}
-              data-testid={`card-item-${card.last_four}`}
-              className={`p-5 rounded-2xl border ${cardClass} flex flex-col justify-between space-y-4`}
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/15 text-teal-400">
-                    {card.card_network} • {card.card_type}
-                  </span>
-                  <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      card.is_balance_manual
-                        ? "bg-amber-500/20 text-amber-300"
-                        : "bg-sky-500/20 text-sky-300"
-                    }`}
+                return (
+                  <tr
+                    key={card.id}
+                    data-testid={`card-item-${card.last_four}`}
                   >
-                    {card.is_balance_manual
-                      ? "Manual Balance"
-                      : "Calculated from Ledger"}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-bold">{card.display_name}</h3>
-                  <p className="text-xs text-slate-400">
-                    {card.bank_name} • Ending{" "}
-                    <strong className="text-slate-200 font-mono">
-                      •••• {card.last_four}
-                    </strong>
-                  </p>
-                </div>
-              </div>
-
-              {card.card_type === "credit" ? (
-                <div className="space-y-3 pt-2 border-t border-slate-800/60 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Current Outstanding:</span>
-                    <strong
+                    <td>
+                      <div className="font-medium">{card.display_name}</div>
+                      <div className="text-[12px] text-[var(--muted)]">
+                        {card.bank_name} · Ending •••• {card.last_four}
+                      </div>
+                    </td>
+                    <td>
+                      {card.card_network} · {card.card_type}
+                    </td>
+                    <td>
+                      <span className="pill">
+                        {card.is_balance_manual
+                          ? "Manual override"
+                          : "Calculated from ledger"}
+                      </span>
+                    </td>
+                    <td className="num">
+                      {card.card_type === "credit" ? (
+                        <div>
+                          <div>
+                            Closes {formatDubaiDate(cycleDates.nextClosingDate)}
+                          </div>
+                          <div className="text-[12px] text-[var(--muted)]">
+                            Due {formatDubaiDate(cycleDates.nextDueDate)}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[var(--muted)]">
+                          Direct debit settlement
+                        </span>
+                      )}
+                    </td>
+                    <td className="n">
+                      {card.card_type === "credit" ? (
+                        <div>
+                          <div>{formatCurrency(availCredit, card.currency)}</div>
+                          <div className="text-[12px] text-[var(--muted)]">
+                            of {formatCurrency(limit, card.currency)}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-[var(--muted)]">-</span>
+                      )}
+                    </td>
+                    <td className="n">
+                      {card.card_type === "credit" ? `${utilPct}%` : "-"}
+                    </td>
+                    <td
                       data-testid={`card-outstanding-${card.last_four}`}
-                      className="text-base text-amber-400"
+                      className="n font-semibold"
                     >
                       {formatCurrency(outBal, card.currency)}
-                    </strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Available Credit:</span>
-                    <strong className="text-emerald-400">
-                      {formatCurrency(availCredit, card.currency)} /{" "}
-                      {formatCurrency(limit, card.currency)}
-                    </strong>
-                  </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-                  {/* Utilization bar */}
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px]">
-                      <span className="text-slate-400">Credit Utilization</span>
-                      <span
-                        className={
-                          utilPct >= 30
-                            ? "text-amber-400 font-bold"
-                            : "text-teal-400 font-bold"
-                        }
-                      >
-                        {utilPct}%
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          utilPct >= 50
-                            ? "bg-rose-500"
-                            : utilPct >= 30
-                            ? "bg-amber-500"
-                            : "bg-teal-500"
-                        }`}
-                        style={{ width: `${Math.min(100, utilPct)}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-400">
-                    <div>
-                      <div>Next Statement:</div>
-                      <strong className="text-slate-200">
-                        {formatDubaiDate(cycleDates.nextClosingDate)}
-                      </strong>
-                    </div>
-                    <div>
-                      <div>Next Payment Due:</div>
-                      <strong className="text-slate-200">
-                        {formatDubaiDate(cycleDates.nextDueDate)}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="pt-2 border-t border-slate-800/60 text-xs text-slate-400">
-                  Linked Debit Card • Direct settlement from bank account
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Credit Card Statements & Repayment Module */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Statements List */}
-        <div
-          className={`lg:col-span-2 p-5 rounded-2xl border ${cardClass} space-y-4`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <CalendarClock className="h-4 w-4 text-amber-400" />
-              <h3 className="text-sm font-bold">
-                Credit Card Statements &amp; Due Date Tracker
-              </h3>
-            </div>
+      {/* Credit Card Statements (7 cols) & Record Repayment Form (5 cols) */}
+      <div className="app-grid top">
+        <section className="panel space-y-4" style={{ gridColumn: "span 7" }}>
+          <div className="panel-header">
+            <h2>Credit card statements &amp; due dates</h2>
             <button
               type="button"
               onClick={() => setShowAddStatement((v) => !v)}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-teal-400 cursor-pointer"
+              className="btn h-8 px-3 text-[12px]"
             >
-              + Enter Manual Statement
+              + Enter manual statement
             </button>
           </div>
 
           {showAddStatement && (
             <form
               onSubmit={handleCreateStatement}
-              className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 text-xs"
+              className="p-3.5 rounded-[6px] bg-[var(--raised)] border border-[var(--border)] space-y-3"
             >
-              <div className="font-semibold text-teal-400">
-                Add Statement Balance &amp; Due Date
+              <div className="text-[13px] font-semibold">
+                Add statement balance &amp; due date
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <select
                   value={stmtCardId}
                   onChange={(e) => setStmtCardId(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                  className="input-control"
                 >
                   {creditCards.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -716,7 +673,7 @@ export function CardsBillsView() {
                   value={stmtPeriod}
                   onChange={(e) => setStmtPeriod(e.target.value)}
                   placeholder="Period label"
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                  className="input-control"
                 />
                 <input
                   type="number"
@@ -724,162 +681,156 @@ export function CardsBillsView() {
                   required
                   value={stmtBalance}
                   onChange={(e) => setStmtBalance(e.target.value)}
-                  placeholder="Statement Balance (AED)"
-                  className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                  placeholder="Statement balance (AED)"
+                  className="input-control num"
                 />
-                <div>
-                  <label className="block text-[10px] text-slate-400">
-                    Period Start
+                <div className="space-y-1">
+                  <label className="block text-[12px] text-[var(--muted)]">
+                    Period start
                   </label>
                   <input
                     type="date"
                     value={stmtStart}
                     onChange={(e) => setStmtStart(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                    className="input-control"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400">
-                    Closing Date
+                <div className="space-y-1">
+                  <label className="block text-[12px] text-[var(--muted)]">
+                    Closing date
                   </label>
                   <input
                     type="date"
                     value={stmtClose}
                     onChange={(e) => setStmtClose(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                    className="input-control"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] text-slate-400">
-                    Payment Due Date
+                <div className="space-y-1">
+                  <label className="block text-[12px] text-[var(--muted)]">
+                    Payment due date
                   </label>
                   <input
                     type="date"
                     value={stmtDue}
                     onChange={(e) => setStmtDue(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700"
+                    className="input-control"
                   />
                 </div>
               </div>
               <div className="flex justify-end">
-                <button
-                  type="submit"
-                  className="px-3.5 py-1.5 rounded-lg bg-teal-600 text-white font-semibold cursor-pointer"
-                >
-                  Save Statement
+                <button type="submit" className="btn primary h-8 px-3">
+                  Save statement
                 </button>
               </div>
             </form>
           )}
 
-          <div className="space-y-3">
-            {state.statements.map((stmt) => {
-              const card = state.cards.find((c) => c.id === stmt.card_id);
-              const daysLeft = daysBetweenDubaiDates(
-                today,
-                stmt.payment_due_date
-              );
-              const isOverdue =
-                stmt.status !== "paid" &&
-                (daysLeft < 0 || stmt.status === "overdue");
+          <div className="table-wrap">
+            <table className="ledger-table">
+              <thead>
+                <tr>
+                  <th>Card &amp; period</th>
+                  <th>Due date</th>
+                  <th>Status</th>
+                  <th className="n">Statement</th>
+                  <th className="n">Paid</th>
+                  <th className="n">Remaining due</th>
+                </tr>
+              </thead>
+              <tbody>
+                {state.statements.map((stmt) => {
+                  const card = state.cards.find((c) => c.id === stmt.card_id);
+                  const daysLeft = daysBetweenDubaiDates(
+                    today,
+                    stmt.payment_due_date
+                  );
+                  const isOverdue =
+                    stmt.status !== "paid" &&
+                    (daysLeft < 0 || stmt.status === "overdue");
 
-              return (
-                <div
-                  key={stmt.id}
-                  data-testid={`statement-row-${stmt.id}`}
-                  className={`p-4 rounded-xl border space-y-2 text-xs ${
-                    isOverdue
-                      ? "bg-rose-950/35 border-rose-600"
-                      : stmt.status === "paid"
-                      ? "bg-emerald-950/20 border-emerald-800/50"
-                      : "bg-slate-950/60 border-slate-800"
-                  }`}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="font-bold text-sm">
-                      {card?.display_name} (••{card?.last_four}) —{" "}
-                      {stmt.statement_period_label}
-                    </div>
-                    <span
-                      data-testid={`statement-status-${stmt.id}`}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                        stmt.status === "paid"
-                          ? "bg-emerald-500/20 text-emerald-300"
-                          : isOverdue
-                          ? "bg-rose-500/25 text-rose-200"
-                          : stmt.status === "partially_paid"
-                          ? "bg-teal-500/20 text-teal-300"
-                          : "bg-amber-500/20 text-amber-300"
-                      }`}
+                  return (
+                    <tr
+                      key={stmt.id}
+                      data-testid={`statement-row-${stmt.id}`}
                     >
-                      {isOverdue ? "OVERDUE" : stmt.status.replace("_", " ")}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                    <div>
-                      <span className="text-slate-400 block">
-                        Statement Total:
-                      </span>
-                      <strong>{formatCurrency(stmt.statement_balance)}</strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Amount Paid:</span>
-                      <strong className="text-emerald-400">
+                      <td>
+                        <div className="font-medium">
+                          {card?.display_name} (••{card?.last_four})
+                        </div>
+                        <div className="text-[12px] text-[var(--muted)]">
+                          {stmt.statement_period_label}
+                        </div>
+                      </td>
+                      <td className="num">
+                        <div>{formatDubaiDate(stmt.payment_due_date)}</div>
+                        <div className="text-[12px] text-[var(--muted)]">
+                          Min {formatCurrency(stmt.minimum_payment)}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          data-testid={`statement-status-${stmt.id}`}
+                          className={`pill ${
+                            stmt.status === "paid"
+                              ? "pos"
+                              : isOverdue
+                              ? "neg"
+                              : "warn"
+                          }`}
+                        >
+                          {isOverdue
+                            ? "Overdue"
+                            : stmt.status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="n">
+                        {formatCurrency(stmt.statement_balance)}
+                      </td>
+                      <td className="n text-[var(--positive)]">
                         {formatCurrency(stmt.amount_paid)}
-                      </strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">
-                        Remaining Due:
-                      </span>
-                      <strong
+                      </td>
+                      <td
                         data-testid={`statement-remaining-${stmt.id}`}
-                        className="text-amber-400"
+                        className="n font-semibold"
                       >
                         {formatCurrency(stmt.outstanding_balance)}
-                      </strong>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block">Due Date:</span>
-                      <strong>{formatDubaiDate(stmt.payment_due_date)}</strong>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </section>
 
-        {/* Record Credit Card Payment Form */}
+        {/* Record Credit Card Repayment Form */}
         <form
           onSubmit={handleRecordRepayment}
           data-testid="cc-repayment-form"
-          className={`p-5 rounded-2xl border ${cardClass} space-y-4`}
+          className="panel space-y-3.5"
+          style={{ gridColumn: "span 5" }}
         >
-          <div className="flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-teal-400" />
-            <h3 className="text-sm font-bold">
-              Record Credit Card Bill Payment
-            </h3>
+          <div>
+            <h2 className="text-[16px] font-semibold">
+              Record credit card bill payment
+            </h2>
+            <p className="panel-meta mt-1">
+              Recorded as a liability transfer from your bank account so card
+              purchases and repayments are never double-counted as two expenses.
+            </p>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Supports partial or full payments. Recorded as a{" "}
-            <strong className="text-slate-200">liability transfer</strong> from
-            your bank account so your card purchases and bill repayment are
-            never double-counted as two expenses.
-          </p>
 
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Target Credit Card
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Target credit card
               </label>
               <select
                 data-testid="repayment-card-select"
                 value={payCardId}
                 onChange={(e) => setPayCardId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 {creditCards.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -889,15 +840,15 @@ export function CardsBillsView() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Apply to Statement
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Apply to statement
               </label>
               <select
                 data-testid="repayment-statement-select"
                 value={payStatementId}
                 onChange={(e) => setPayStatementId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 <option value="">Auto-select active statement</option>
                 {state.statements.map((s) => (
@@ -909,14 +860,14 @@ export function CardsBillsView() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Pay From Bank Account
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Pay from bank account
               </label>
               <select
                 value={payAccountId}
                 onChange={(e) => setPayAccountId(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               >
                 {state.accounts.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -926,107 +877,116 @@ export function CardsBillsView() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Payment Amount (AED) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                data-testid="repayment-amount-input"
-                value={payAmount}
-                onChange={(e) => setPayAmount(e.target.value)}
-                placeholder="e.g. 2850.00"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 font-bold"
-              />
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Payment amount (AED) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  data-testid="repayment-amount-input"
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                  placeholder="2850.00"
+                  className="input-control font-semibold num"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[13px] font-medium">
+                  Payment date
+                </label>
+                <input
+                  type="date"
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                  className="input-control"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-slate-400 mb-1">Payment Date</label>
-              <input
-                type="date"
-                value={payDate}
-                onChange={(e) => setPayDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-400 mb-1">
-                Payment Reference #
+            <div className="space-y-1">
+              <label className="block text-[13px] font-medium">
+                Payment reference #
               </label>
               <input
                 type="text"
                 value={payRef}
                 onChange={(e) => setPayRef(e.target.value)}
                 placeholder="Optional bank transfer ref"
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800"
+                className="input-control"
               />
             </div>
 
             <button
               type="submit"
               data-testid="submit-cc-repayment-btn"
-              className="w-full py-2.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold flex items-center justify-center gap-2 cursor-pointer"
+              className="btn primary w-full"
             >
-              <span>Record Card Repayment</span>
-              <ArrowRight className="h-4 w-4" />
+              Record card repayment
             </button>
           </div>
         </form>
       </div>
 
-      {/* Registered Bank Accounts Table */}
-      <div className={`p-5 rounded-2xl border ${cardClass} space-y-3`}>
-        <h3 className="text-sm font-bold flex items-center gap-2">
-          <Receipt className="h-4 w-4 text-teal-400" />
-          <span>
-            Registered Bank Accounts (Distinguishing Verified Manual vs
-            Opening/Estimated Balances)
+      {/* Bank Accounts Table */}
+      <section className="panel p-0 overflow-hidden">
+        <div className="p-5 pb-3 panel-header mb-0">
+          <h2>Registered UAE bank accounts</h2>
+          <span className="panel-meta">
+            Actual bank balances are shown only when manually verified
           </span>
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {state.accounts.map((acc) => (
-            <div
-              key={acc.id}
-              className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-3 text-xs"
-            >
-              <div>
-                <div className="font-bold text-sm">{acc.display_name}</div>
-                <div className="text-slate-400">
-                  {acc.bank_name} • {acc.account_type.toUpperCase()}{" "}
-                  {acc.last_four ? `• •••• ${acc.last_four}` : ""}
-                </div>
-                <div className="text-[11px] text-slate-500 mt-1">
-                  Opening Balance: {formatCurrency(acc.opening_balance)}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-bold text-emerald-400">
-                  {formatCurrency(
-                    acc.is_manual_balance_verified && acc.manual_balance !== null
-                      ? acc.manual_balance
-                      : acc.opening_balance,
-                    acc.currency
-                  )}
-                </div>
-                <span
-                  className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                    acc.is_manual_balance_verified
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : "bg-amber-500/20 text-amber-300"
-                  }`}
-                >
-                  {acc.is_manual_balance_verified
-                    ? "Verified Actual Balance"
-                    : "Unverified Opening Balance"}
-                </span>
-              </div>
-            </div>
-          ))}
         </div>
-      </div>
+        <div className="table-wrap">
+          <table className="ledger-table">
+            <thead>
+              <tr>
+                <th>Account &amp; bank</th>
+                <th>Type</th>
+                <th>Verification status</th>
+                <th className="n">Opening balance</th>
+                <th className="n">Verified actual balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.accounts.map((acc) => (
+                <tr key={acc.id}>
+                  <td>
+                    <div className="font-medium">{acc.display_name}</div>
+                    <div className="text-[12px] text-[var(--muted)]">
+                      {acc.bank_name}{" "}
+                      {acc.last_four ? `· •••• ${acc.last_four}` : ""}
+                    </div>
+                  </td>
+                  <td>{acc.account_type}</td>
+                  <td>
+                    <span
+                      className={`pill ${
+                        acc.is_manual_balance_verified ? "pos" : "warn"
+                      }`}
+                    >
+                      {acc.is_manual_balance_verified
+                        ? "Verified actual balance"
+                        : "Unverified opening balance"}
+                    </span>
+                  </td>
+                  <td className="n">
+                    {formatCurrency(acc.opening_balance, acc.currency)}
+                  </td>
+                  <td className="n font-semibold">
+                    {acc.is_manual_balance_verified &&
+                    acc.manual_balance !== null
+                      ? formatCurrency(acc.manual_balance, acc.currency)
+                      : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   );
 }

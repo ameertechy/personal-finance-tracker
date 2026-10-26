@@ -1,0 +1,1916 @@
+{
+ "url": "http://127.0.0.1:43120",
+ "at": "2026-10-26T10:30:58.306Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 2,
+    "css": 1,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 1711,
+     "screens": 1.9,
+     "words": 642,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 38,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 18,
+     "vw": 1.3,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.56,
+     "top": 12,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dashboard",
+     "words": 1,
+     "lines": 1,
+     "size": 18,
+     "font": "Arial"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Arial",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      20,
+      24
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": {
+      "font": "Arial",
+      "size": 11,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.8
+     },
+     "measureChars": 65,
+     "max": {
+      "size": 24,
+      "vw": 1.7,
+      "font": "Arial",
+      "text": "AED 32,000.00"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 3,
+     "microLabelShare": 0.009,
+     "microSamples": [
+      "screenshot ocr",
+      "sms text",
+      "receipt camera"
+     ],
+     "upperShare": 0.1,
+     "centerShare": 0.05,
+     "smallText": 81
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#020618",
+       "top": 0,
+       "hsl": {
+        "h": 229,
+        "s": 0.85,
+        "l": 0.05
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#90a1b9",
+       "share": 0.48
+      },
+      {
+       "color": "#f1f5f9",
+       "share": 0.33
+      },
+      {
+       "color": "#00d5be",
+       "share": 0.05
+      },
+      {
+       "color": "#e2e8f0",
+       "share": 0.04
+      },
+      {
+       "color": "#cad5e2",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#009689",
+      "hsl": {
+       "h": 175,
+       "s": 1,
+       "l": 0.29
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Dashboard",
+       "ratio": 3.7,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#ffffff",
+       "bg": "#009689"
+      },
+      {
+       "text": "Record Expense / Scan Receipt",
+       "ratio": 3.7,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#ffffff",
+       "bg": "#009689"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 3,
+     "inHero": 3,
+     "radius": 12,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Dashboard",
+      "Online",
+      "Record Expense / Scan Receipt"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "button.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 10,
+     "hairlineSamples": [
+      "aside.hidden.md:flex 256px",
+      "div.p-5.flex 255px",
+      "div.p-4.border-t 255px",
+      "header.sticky.top-0 1184px",
+      "div.pt-3.border-t 321px"
+     ],
+     "outlinedBoxes": 14,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 14,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 162
+      },
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 691
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 900,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": []
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 1711,
+    "margins": {
+     "left": 297,
+     "right": 45
+    },
+    "sections": [
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 162,
+      "height": 136,
+      "words": 45,
+      "media": 0,
+      "middle": 94,
+      "heading": {
+       "text": "AED 32,000.00",
+       "size": 24,
+       "tag": "div"
+      },
+      "left": 297,
+      "right": 78,
+      "textLeft": 297,
+      "textRight": 78,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 322,
+      "height": 345,
+      "words": 157,
+      "media": 0,
+      "middle": 84,
+      "heading": {
+       "text": "Upcoming Credit Card Payment Due Dates",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 316,
+      "right": 58,
+      "textLeft": 316,
+      "textRight": 58,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 691,
+      "height": 390,
+      "words": 89,
+      "media": 2,
+      "middle": 66,
+      "heading": {
+       "text": "Spending by Category",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 301,
+      "right": 45,
+      "textLeft": 301,
+      "textRight": 169,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 1105,
+      "height": 395,
+      "words": 141,
+      "media": 0,
+      "middle": 134,
+      "heading": {
+       "text": "Latest Confirmed Transactions",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 301,
+      "right": 45,
+      "textLeft": 301,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.p-4.rounded-2xl",
+      "tag": "div",
+      "top": 1523,
+      "height": 131,
+      "words": 137,
+      "media": 0,
+      "middle": 14,
+      "heading": null,
+      "left": 297,
+      "right": 46,
+      "textLeft": 297,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dashboard",
+      "size": 18,
+      "top": 12,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 280,
+      "n": 2
+     },
+     {
+      "x": 301,
+      "n": 2
+     },
+     {
+      "x": 325,
+      "n": 1
+     },
+     {
+      "x": 521,
+      "n": 1
+     },
+     {
+      "x": 688,
+      "n": 1
+     },
+     {
+      "x": 905,
+      "n": 1
+     },
+     {
+      "x": 1074,
+      "n": 1
+     },
+     {
+      "x": 1098,
+      "n": 1
+     },
+     {
+      "x": 1220,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 11,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.08,
+    "voidBox": {
+     "x": 0,
+     "y": 420,
+     "w": 300,
+     "h": 360
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": {
+     "w": 256,
+     "tag": "aside",
+     "links": 8,
+     "share": 0.18
+    },
+    "topbar": {
+     "h": 70
+    },
+    "canvas": {
+     "left": 41,
+     "right": 33
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 18,
+     "vw": 1.3,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.56,
+     "top": 12,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 13,
+     "firstScreen": 10,
+     "ragged": [],
+     "voids": [
+      {
+       "gap": 107,
+       "at": 1371,
+       "panel": "Recent Extraction Activity"
+      },
+      {
+       "gap": 102,
+       "at": 958,
+       "panel": "Daily Expense Trend (2026-10)"
+      },
+      {
+       "gap": 71,
+       "at": 989,
+       "panel": "Spending by Card & Account"
+      }
+     ]
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 17,
+     "radii": [
+      [
+       16,
+       12
+      ],
+      [
+       12,
+       3
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      },
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 5,
+    "placeholders": [],
+    "type": {
+     "under13": 0.9,
+     "tiny": 34,
+     "tinySamples": [
+      "partially paid 10px",
+      "Min due: 10px",
+      "AED 242.50 10px",
+      "• Paid: 10px"
+     ],
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      20,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dashboard",
+     "size": 18,
+     "top": 12
+    },
+    "colourShare": 0.035
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    1,
+    1,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 2,
+    "css": 1,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 3383,
+     "screens": 3.3,
+     "words": 641,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 38,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 18,
+     "vw": 2.3,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.56,
+     "top": 12,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dashboard",
+     "words": 1,
+     "lines": 1,
+     "size": 18,
+     "font": "Arial"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Arial",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      20,
+      24
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": {
+      "font": "Arial",
+      "size": 11,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.8
+     },
+     "measureChars": 25,
+     "max": {
+      "size": 24,
+      "vw": 3.1,
+      "font": "Arial",
+      "text": "AED 32,000.00"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 3,
+     "microLabelShare": 0.009,
+     "microSamples": [
+      "screenshot ocr",
+      "sms text",
+      "receipt camera"
+     ],
+     "upperShare": 0.1,
+     "centerShare": 0.04,
+     "smallText": 81
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#020618",
+       "top": 0,
+       "hsl": {
+        "h": 229,
+        "s": 0.85,
+        "l": 0.05
+       }
+      },
+      {
+       "color": "#0f172b",
+       "top": 0,
+       "hsl": {
+        "h": 223,
+        "s": 0.48,
+        "l": 0.11
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#90a1b9",
+       "share": 0.48
+      },
+      {
+       "color": "#f1f5f9",
+       "share": 0.33
+      },
+      {
+       "color": "#00d5be",
+       "share": 0.05
+      },
+      {
+       "color": "#e2e8f0",
+       "share": 0.05
+      },
+      {
+       "color": "#cad5e2",
+       "share": 0.03
+      }
+     ],
+     "button": {
+      "bg": "#009689",
+      "hsl": {
+       "h": 175,
+       "s": 1,
+       "l": 0.29
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Dashboard",
+       "ratio": 3.7,
+       "need": 4.5,
+       "size": 14,
+       "fg": "#ffffff",
+       "bg": "#009689"
+      },
+      {
+       "text": "Record Expense / Scan Receipt",
+       "ratio": 3.7,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#ffffff",
+       "bg": "#009689"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 2,
+     "inHero": 2,
+     "radius": 12,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Dashboard",
+      "Record Expense / Scan Receipt"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "button.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 10,
+     "hairlineSamples": [
+      "aside.hidden.md:flex 256px",
+      "div.p-5.flex 255px",
+      "div.p-4.border-t 255px",
+      "header.sticky.top-0 512px",
+      "div.pt-3.border-t 422px"
+     ],
+     "outlinedBoxes": 14,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 14,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 4,
+       "iconTopped": true,
+       "rounded": true,
+       "top": 252
+      },
+      {
+       "count": 3,
+       "iconTopped": false,
+       "rounded": true,
+       "top": 1294
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 1024,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": []
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 3383,
+    "margins": {
+     "left": 280,
+     "right": 45
+    },
+    "sections": [
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 252,
+      "height": 288,
+      "words": 45,
+      "media": 0,
+      "middle": 50,
+      "heading": {
+       "text": "AED 32,000.00",
+       "size": 24,
+       "tag": "div"
+      },
+      "left": 297,
+      "right": 46,
+      "textLeft": 297,
+      "textRight": 46,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 564,
+      "height": 706,
+      "words": 157,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Upcoming Credit Card Payment Due Dates",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 301,
+      "right": 45,
+      "textLeft": 301,
+      "textRight": 58,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 1294,
+      "height": 1031,
+      "words": 89,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Spending by Category",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 301,
+      "right": 45,
+      "textLeft": 301,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 2348,
+      "height": 707,
+      "words": 140,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Latest Confirmed Transactions",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 301,
+      "right": 45,
+      "textLeft": 301,
+      "textRight": 45,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.p-4.rounded-2xl",
+      "tag": "div",
+      "top": 3079,
+      "height": 249,
+      "words": 137,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 297,
+      "right": 44,
+      "textLeft": 297,
+      "textRight": 44,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dashboard",
+      "size": 18,
+      "top": 12,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 301,
+      "n": 4
+     },
+     {
+      "x": 324,
+      "n": 3
+     },
+     {
+      "x": 280,
+      "n": 2
+     },
+     {
+      "x": 447,
+      "n": 1
+     },
+     {
+      "x": 521,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 11,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": {
+     "w": 256,
+     "tag": "aside",
+     "links": 8,
+     "share": 0.33
+    },
+    "topbar": null,
+    "canvas": {
+     "left": 24,
+     "right": 41
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 18,
+     "vw": 2.3,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.56,
+     "top": 12,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 13,
+     "firstScreen": 7,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 17,
+     "radii": [
+      [
+       16,
+       12
+      ],
+      [
+       12,
+       3
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      },
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 5,
+    "placeholders": [],
+    "type": {
+     "under13": 0.9,
+     "tiny": 34,
+     "tinySamples": [
+      "partially paid 10px",
+      "Min due: 10px",
+      "AED 242.50 10px",
+      "• Paid: 10px"
+     ],
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      20,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dashboard",
+     "size": 18,
+     "top": 12
+    },
+    "colourShare": 0.04
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 5,
+   "filled": [
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "motion": {
+    "elements": 2,
+    "css": 1,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 3879,
+     "screens": 4.6,
+     "words": 614,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 38,
+     "sections": 0,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 16,
+     "vw": 4.1,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.5,
+     "top": 16,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dashboard",
+     "words": 1,
+     "lines": 1,
+     "size": 16,
+     "font": "Arial"
+    },
+    "headings": [
+     {
+      "text": "AED 32,000.00",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Arial",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 272,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "AED 8,543.30",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Arial",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 408,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "AED 76,956.70",
+      "words": 2,
+      "chars": 13,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Arial",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 543,
+      "tag": "div",
+      "kind": "heading"
+     },
+     {
+      "text": "AED 6,087.55",
+      "words": 2,
+      "chars": 12,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Arial",
+      "weight": 800,
+      "tracking": -0.025,
+      "leading": 1.33,
+      "upper": true,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.83,
+      "top": 679,
+      "tag": "div",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 4,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": 2,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Arial",
+       "share": 1,
+       "mono": false
+      }
+     ],
+     "familyCount": 1,
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      24
+     ],
+     "sizeCount": 7,
+     "notLoaded": [],
+     "body": {
+      "font": "Arial",
+      "size": 11,
+      "leading": 1.5,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.8
+     },
+     "measureChars": 59,
+     "max": {
+      "size": 24,
+      "vw": 6.2,
+      "font": "Arial",
+      "text": "AED 32,000.00"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 3,
+     "microLabelShare": 0.01,
+     "microSamples": [
+      "screenshot ocr",
+      "sms text",
+      "receipt camera"
+     ],
+     "upperShare": 0.1,
+     "centerShare": 0.04,
+     "smallText": 76
+    },
+    "eyebrows": [
+     {
+      "text": "Monthly Salary / Income",
+      "above": "AED 32,000.00",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 248
+     },
+     {
+      "text": "Total Spending (2026-10)",
+      "above": "AED 8,543.30",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 384
+     },
+     {
+      "text": "Available Funds",
+      "above": "AED 76,956.70",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 519
+     },
+     {
+      "text": "Credit Card Outstanding",
+      "above": "AED 6,087.55",
+      "upper": false,
+      "tracked": false,
+      "mono": false,
+      "pill": false,
+      "size": 12,
+      "top": 655
+     }
+    ],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#ffffff",
+     "bodyBgHsl": {
+      "h": 0,
+      "s": 0,
+      "l": 1
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#020618",
+       "top": 0,
+       "hsl": {
+        "h": 229,
+        "s": 0.85,
+        "l": 0.05
+       }
+      },
+      {
+       "color": "#10172b",
+       "top": 781,
+       "hsl": {
+        "h": 224,
+        "s": 0.46,
+        "l": 0.12
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#90a1b9",
+       "share": 0.49
+      },
+      {
+       "color": "#f1f5f9",
+       "share": 0.34
+      },
+      {
+       "color": "#00d5be",
+       "share": 0.05
+      },
+      {
+       "color": "#e2e8f0",
+       "share": 0.05
+      },
+      {
+       "color": "#00d492",
+       "share": 0.02
+      }
+     ],
+     "button": {
+      "bg": "#009689",
+      "hsl": {
+       "h": 175,
+       "s": 1,
+       "l": 0.29
+      },
+      "fg": "#ffffff"
+     },
+     "lowContrast": [
+      {
+       "text": "Record Expense / Scan Receipt",
+       "ratio": 3.7,
+       "need": 4.5,
+       "size": 12,
+       "fg": "#ffffff",
+       "bg": "#009689"
+      }
+     ]
+    },
+    "buttons": {
+     "count": 1,
+     "inHero": 1,
+     "radius": 12,
+     "height": 32,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Record Expense / Scan Receipt"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 1,
+     "shadowOverlay": 0,
+     "shadowSamples": [
+      "button.inline-flex.items-center → rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0"
+     ],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 12,
+     "hairlineSamples": [
+      "header.sticky.top-0 390px",
+      "div.text-[11px].text-slate-400 324px",
+      "div.text-[11px].text-slate-400 324px",
+      "div.text-[11px].text-slate-400 324px",
+      "div.text-[11px].text-slate-400 324px"
+     ],
+     "outlinedBoxes": 17,
+     "dashed": 0,
+     "blurred": 2,
+     "roundedBoxes": 17,
+     "boxRadius": 16,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": false,
+     "height": 0,
+     "floatingPill": false,
+     "blur": false
+    },
+    "fontsLoaded": []
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 3879,
+    "margins": {
+     "left": 19,
+     "right": 33
+    },
+    "sections": [
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 231,
+      "height": 526,
+      "words": 45,
+      "media": 0,
+      "middle": 2,
+      "heading": {
+       "text": "AED 32,000.00",
+       "size": 24,
+       "tag": "div"
+      },
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 33,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 781,
+      "height": 839,
+      "words": 157,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Upcoming Credit Card Payment Due Dates",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 50,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 1644,
+      "height": 1062,
+      "words": 89,
+      "media": 2,
+      "middle": 0,
+      "heading": {
+       "text": "Spending by Category",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 37,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.grid.grid-cols-1",
+      "tag": "div",
+      "top": 2729,
+      "height": 742,
+      "words": 139,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Latest Confirmed Transactions",
+       "size": 14,
+       "tag": "h3"
+      },
+      "left": 37,
+      "right": 37,
+      "textLeft": 37,
+      "textRight": 37,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     },
+     {
+      "sel": "div.p-4.rounded-2xl",
+      "tag": "div",
+      "top": 3495,
+      "height": 289,
+      "words": 137,
+      "media": 0,
+      "middle": 0,
+      "heading": null,
+      "left": 33,
+      "right": 33,
+      "textLeft": 33,
+      "textRight": 33,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dashboard",
+      "size": 16,
+      "top": 16,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [
+     {
+      "text": "Dashboard",
+      "side": "left",
+      "px": 6
+     },
+     {
+      "text": "Settings",
+      "side": "right",
+      "px": 12
+     }
+    ],
+    "edges": [
+     {
+      "x": 37,
+      "n": 4
+     },
+     {
+      "x": 56,
+      "n": 4
+     },
+     {
+      "x": 16,
+      "n": 1
+     },
+     {
+      "x": 183,
+      "n": 1
+     },
+     {
+      "x": 233,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 11,
+    "bodySize": 11,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#ffffff",
+    "sidebar": null,
+    "topbar": null,
+    "canvas": {
+     "left": 16,
+     "right": 4
+    },
+    "hero": {
+     "text": "Dashboard",
+     "words": 1,
+     "chars": 9,
+     "lines": 1,
+     "size": 16,
+     "vw": 4.1,
+     "font": "Arial",
+     "weight": 700,
+     "tracking": -0.02,
+     "leading": 1.5,
+     "top": 16,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 2,
+    "layout": {
+     "panels": 12,
+     "firstScreen": 5,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 0,
+    "panels": {
+     "count": 17,
+     "radii": [
+      [
+       16,
+       12
+      ],
+      [
+       12,
+       5
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 2,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      },
+      {
+       "hue": 223,
+       "size": 34,
+       "radius": "12px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 0,
+     "tabularShare": null,
+     "kpiMax": null
+    },
+    "rows": null,
+    "chartHues": 5,
+    "placeholders": [],
+    "type": {
+     "under13": 0.89,
+     "tiny": 34,
+     "tinySamples": [
+      "partially paid 10px",
+      "Min due: 10px",
+      "AED 242.50 10px",
+      "• Paid: 10px"
+     ],
+     "sizes": [
+      10,
+      11,
+      12,
+      14,
+      16,
+      18,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dashboard",
+     "size": 16,
+     "top": 16
+    },
+    "colourShare": 0.047
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "micro-label",
+   "width": 1440,
+   "message": "3 tiny uppercase letter-spaced labels (e.g. \"screenshot ocr\", \"sms text\", \"receipt camera\").",
+   "fix": "Use sentence-case text at a readable size, or delete the label.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "contrast",
+   "width": 1440,
+   "message": "Low-contrast text: \"Dashboard\" 3.7:1 needs 4.5:1; \"Record Expense / Scan Receipt\" 3.7:1 needs 4.5:1",
+   "fix": "Darken or lighten the text colour.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "rainbow-chart",
+   "width": 1440,
+   "message": "The charts use 5 different hues.",
+   "fix": "Four series colours at most; prefer one accent and neutrals.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "tiny-text",
+   "width": 1440,
+   "message": "34 text blocks under 11px: partially paid 10px, Min due: 10px, AED 242.50 10px, • Paid: 10px.",
+   "fix": "Nothing below 11px; secondary text 12px, data 13–14px.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "panel-void",
+   "width": 1440,
+   "message": "3 card(s) hold a blank band inside: 107px in \"Recent Extraction Activity\", 102px in \"Daily Expense Trend (2026-10)\", 71px in \"Spending by Card & Account\".",
+   "fix": "A card stretches to its neighbour only when it has content to fill. Keep a legend or a note directly under its chart (only an action or a total may sit at a stretched card's foot), let a short card keep its own height (align-items: start), and let a filtered block shrink to its rows."
+  },
+  {
+   "level": "FAIL",
+   "id": "edge-text",
+   "width": 390,
+   "message": "1 text block(s) sit within 12px of the screen edge: \"Dashboard\" (6px from the left)",
+   "fix": "Keep text inside the page margin (16–20px). Only display type deliberately bled past the edge may touch it."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "/workspace/.taste-skill/before/desktop-fold.jpg",
+   "pages": [
+    "/workspace/.taste-skill/before/desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "/workspace/.taste-skill/before/tablet-fold.jpg",
+   "pages": [
+    "/workspace/.taste-skill/before/tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "/workspace/.taste-skill/before/mobile-fold.jpg",
+   "pages": [
+    "/workspace/.taste-skill/before/mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}
