@@ -439,9 +439,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {state?.profile.full_name || session?.fullName}
               </span>
               {state?.profile.is_demo_mode && (
-                <span data-testid="demo-mode-badge" className="pill">
-                  Demo data
-                </span>
+                <button
+                  type="button"
+                  data-testid="demo-mode-badge"
+                  title="Click to remove all demo sample data and start with a blank ledger"
+                  onClick={() =>
+                    mutateFinance("reset_demo_data", { seedDemoData: false })
+                  }
+                  className="pill warn cursor-pointer hover:underline"
+                >
+                  Clear demo data
+                </button>
               )}
             </div>
             <div className="flex items-center justify-between text-[12px] text-[var(--muted)]">
