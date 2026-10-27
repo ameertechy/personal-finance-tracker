@@ -344,6 +344,14 @@ export function SettingsView() {
               <Download className="h-3.5 w-3.5" />
               <span>Export JSON backup</span>
             </button>
+            <a
+              href="/dirham-pulse-uae-finance.zip"
+              download="personal-finance-tracker.zip"
+              className="btn"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Download Full Source Code (.zip)</span>
+            </a>
             <button
               type="button"
               onClick={async () => {

@@ -414,6 +414,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
+          <a
+            href="/dirham-pulse-uae-finance.zip"
+            download="personal-finance-tracker.zip"
+            className="btn w-full h-8 text-[12px]"
+          >
+            Download Project Code (.zip)
+          </a>
+
           <div className="px-2 py-2 rounded-[6px] bg-[var(--raised)] space-y-1">
             <div className="flex items-center justify-between gap-2">
               <span className="text-[13px] font-medium truncate">
