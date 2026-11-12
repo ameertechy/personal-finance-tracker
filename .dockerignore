@@ -1,0 +1,13 @@
+node_modules
+.next
+.data
+.env*
+!.env.example
+.git
+.agents
+.taste-skill
+test-results
+playwright-report
+coverage
+# Full-source archive; must never be served from the container
+public/*.zip

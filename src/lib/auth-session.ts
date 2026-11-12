@@ -1,7 +1,11 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
 import { createSupabaseServerClient } from "./supabase/server";
-import { DEFAULT_DEMO_EMAIL, DEFAULT_DEMO_USER_ID } from "./server-store";
+import {
+  DEFAULT_DEMO_EMAIL,
+  DEFAULT_DEMO_USER_ID,
+  demoSandboxEnabled,
+} from "./server-store";
 
 export const SESSION_COOKIE_NAME = "dp_uae_session";
 
@@ -57,7 +61,7 @@ export function verifySessionToken(
  * 1. Supabase Auth server session (if Supabase is configured and active), OR
  * 2. Signed HTTP-only session cookie (`dp_uae_session`).
  * If neither is present and the user hasn't explicitly signed out (`dp_signed_out=1`),
- * falls back in local development sandbox to the owner sandbox session so the preview works immediately,
+ * falls back (outside production only) to the owner sandbox session so the preview works immediately,
  * while still supporting full sign-out, login, registration, and multi-user isolation.
  */
 export async function getServerSession(): Promise<AuthenticatedSession | null> {
@@ -85,11 +89,11 @@ export async function getServerSession(): Promise<AuthenticatedSession | null> {
   const verified = verifySessionToken(rawToken);
   if (verified) return verified;
 
-  if (signedOutFlag === "1") {
+  if (signedOutFlag === "1" || !demoSandboxEnabled()) {
     return null;
   }
 
-  // Default sandbox owner session on initial visit before explicit sign-out
+  // Local development only: default sandbox owner session on initial visit before explicit sign-out
   return {
     userId: DEFAULT_DEMO_USER_ID,
     email: DEFAULT_DEMO_EMAIL,

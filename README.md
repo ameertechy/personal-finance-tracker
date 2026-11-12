@@ -40,35 +40,45 @@ A production-minded, mobile-first personal finance tracking application engineer
 ### Prerequisites
 - **Node.js**: v20.x or v22.x+
 - **npm**: v10+
-- **Supabase Project** (optional for local development: the app includes a built-in server-side persistent store fallback in `.data/finance-store.json` so all workflows work immediately out of the box, and connects to Supabase PostgreSQL + Auth + Storage when `.env.local` is configured).
+- **PostgreSQL** — all data lives in PostgreSQL tables defined in `db/schema.sql`. The app creates the tables itself on first start; no manual migration step. For local development you need no database install (see below).
 
 ### Installation & Running Locally
 ```bash
 # 1. Install dependencies
 npm install
 
-# 2. Copy environment variable template
-cp .env.example .env.local
-
-# 3. Start the development server (runs on http://127.0.0.1:43120)
-npm run dev
+# 2. Start PGlite (PostgreSQL in WebAssembly, stored in .data/pglite) plus the dev server
+#    on http://127.0.0.1:43120
+npm run dev:local
 ```
+
+To use your own PostgreSQL instead, set `DATABASE_URL` and run `npm run dev`.
 
 ---
 
-## 3. Supabase Setup & Database Migrations
+## 3. Deployment with Docker (two containers: app + PostgreSQL)
 
-1. Create a new project in the [Supabase Dashboard](https://supabase.com/dashboard).
-2. Copy your Project URL, Anon Key, and Service Role Key into `.env.local`.
-3. Apply the SQL schema and RLS migration located at `supabase/migrations/20261026000001_initial_schema.sql`:
-   ```bash
-   # Using Supabase CLI:
-   npx supabase db push
+On the server (e.g. Ubuntu with Docker Engine and the compose plugin installed):
 
-   # Or paste the contents of supabase/migrations/20261026000001_initial_schema.sql
-   # directly into the Supabase SQL Editor and click Run.
-   ```
-4. The migration automatically creates the private `receipts` storage bucket (`public = false`, 10 MB limit, allowed MIME types `image/jpeg`, `image/png`, `image/webp`, `application/pdf`) along with folder-level RLS policies restricting access to `auth.uid()`.
+```bash
+# 1. Create .env next to docker-compose.yml with three secrets (hex only)
+echo "POSTGRES_PASSWORD=$(openssl rand -hex 32)" > .env
+echo "SESSION_SECRET=$(openssl rand -hex 32)" >> .env
+echo "RECEIPT_SIGNING_SECRET=$(openssl rand -hex 32)" >> .env
+
+# 2. Build and start
+docker compose up -d --build
+```
+
+- The app listens on `127.0.0.1:43120` (the server itself only). To reach it from other machines, change the `ports` line in `docker-compose.yml` or put a reverse proxy with HTTPS (e.g. Caddy) in front.
+- PostgreSQL is not published to the host; its data lives in the `pgdata` Docker volume and survives rebuilds.
+- In production there is no demo account, no "Open UAE Demo Sandbox" button and no automatic sign-in: open the app and use **Register account**. (The demo sandbox exists only in local development.)
+- Passwords are stored as salted scrypt hashes. **Change password** needs the current password; there is no email reset. If you forget your password, set a new one from the server:
+  ```bash
+  HASH=$(docker compose exec -T app node -e 'const c=require("crypto");const s=c.randomBytes(16);console.log("scrypt$"+s.toString("hex")+"$"+c.scryptSync(process.argv[1],s,64).toString("hex"))' 'your-new-password')
+  docker compose exec -T db psql -U dirhampulse dirhampulse -c "UPDATE app_users SET password_hash='$HASH' WHERE email='you@example.com'"
+  ```
+- `supabase/migrations/` is the earlier Supabase-only schema and is no longer used.
 
 ---
 
@@ -109,13 +119,12 @@ npm run test:e2e
 - **Full JSON Vault Backup**: Go to **Settings → Export Full Financial Backup (JSON)** to download a complete snapshot of your profile, accounts, cards, transactions, statements, budgets, and recurring schedules.
 - **Account & Data Deletion**: Go to **Settings → Delete Account & All Data** to permanently delete your profile, financial records, and stored receipt blobs.
 
-### PostgreSQL Database Backup & Restore (Supabase)
+### PostgreSQL Database Backup & Restore (Docker)
 ```bash
-# Backup PostgreSQL database
-pg_dump --clean --if-exists --quote-all-identifiers \
-  --dbname="$SUPABASE_DB_URL" \
-  --file="dirhampulse_backup_$(date +%Y%m%d).sql"
+# Backup
+docker compose exec -T db pg_dump -U dirhampulse --clean --if-exists dirhampulse \
+  > "dirhampulse_backup_$(date +%Y%m%d).sql"
 
-# Restore PostgreSQL database
-psql "$SUPABASE_DB_URL" --file="dirhampulse_backup_YYYYMMDD.sql"
+# Restore
+docker compose exec -T db psql -U dirhampulse dirhampulse < dirhampulse_backup_YYYYMMDD.sql
 ```

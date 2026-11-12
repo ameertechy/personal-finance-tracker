@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const sourceType = (body.sourceType || "sms_text") as ExtractionSourceType;
     const nowIso = new Date().toISOString();
-    const state = getUserState(session.userId);
+    const state = await getUserState(session.userId);
 
     // Handle retrying a previously failed extraction job
     if (body.action === "retry_job" && body.jobId) {
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
         updated_at: nowIso,
       };
 
-      saveUserState(session.userId, (curr) => ({
+      await saveUserState(session.userId, (curr) => ({
         ...curr,
         extraction_jobs: curr.extraction_jobs.map((j) =>
           j.id === updatedJob.id ? updatedJob : j
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
         updated_at: nowIso,
       };
 
-      storePrivateReceiptBlob({
+      await storePrivateReceiptBlob({
         receipt: createdReceipt,
         dataUrl: String(body.fileDataUrl),
       });
@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
         updated_at: nowIso,
       };
 
-      saveUserState(session.userId, (curr) => ({
+      await saveUserState(session.userId, (curr) => ({
         ...curr,
         receipts: createdReceipt
           ? [createdReceipt, ...curr.receipts]
@@ -252,7 +252,7 @@ export async function POST(req: NextRequest) {
       updated_at: nowIso,
     };
 
-    saveUserState(session.userId, (curr) => ({
+    await saveUserState(session.userId, (curr) => ({
       ...curr,
       receipts: createdReceipt
         ? [createdReceipt, ...curr.receipts]

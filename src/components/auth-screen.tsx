@@ -6,10 +6,14 @@ interface AuthScreenProps {
   onAuthenticated: () => Promise<void>;
 }
 
+// The demo sandbox exists only in local development (see demoSandboxEnabled on the server).
+const DEMO_SANDBOX = process.env.NODE_ENV !== "production";
+
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
-  const [email, setEmail] = useState("owner@dirhampulse.ae");
-  const [password, setPassword] = useState("DubaiFinance2026!");
+  const [email, setEmail] = useState(DEMO_SANDBOX ? "owner@dirhampulse.ae" : "");
+  const [password, setPassword] = useState(DEMO_SANDBOX ? "DubaiFinance2026!" : "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [fullName, setFullName] = useState("UAE Resident");
   const [seedDemoData, setSeedDemoData] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -28,14 +32,15 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            action: "reset_password",
+            action: "change_password",
             email,
+            currentPassword,
             newPassword: password,
           }),
         });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error || "Password reset failed");
+          setError(data.error || "Password change failed");
         } else {
           setInfoMessage(data.message);
           setMode("signin");
@@ -160,7 +165,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
             }}
             className="flex-1"
           >
-            Reset password
+            Change password
           </button>
         </div>
 
@@ -208,6 +213,23 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
             />
           </div>
 
+          {mode === "reset" && (
+            <div className="space-y-1.5">
+              <label className="block text-[14px] font-medium">
+                Current password
+              </label>
+              <input
+                type="password"
+                required
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="input-control"
+                placeholder="••••••••••••"
+                data-testid="current-password-input"
+              />
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <label className="block text-[14px] font-medium">
               {mode === "reset" ? "New password (min 8 characters)" : "Password"}
@@ -249,14 +271,16 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         </form>
 
         <div className="pt-3 border-t border-[var(--border)] space-y-3">
-          <button
-            type="button"
-            onClick={handleQuickDemoSignIn}
-            disabled={submitting}
-            className="btn w-full"
-          >
-            Open UAE Demo Sandbox
-          </button>
+          {DEMO_SANDBOX && (
+            <button
+              type="button"
+              onClick={handleQuickDemoSignIn}
+              disabled={submitting}
+              className="btn w-full"
+            >
+              Open UAE Demo Sandbox
+            </button>
+          )}
           <p className="text-[12px] text-[var(--muted)] leading-relaxed">
             Row-level security isolates every account by{" "}
             <code>user_id</code>. Full card numbers, CVVs, PINs, and OTPs are

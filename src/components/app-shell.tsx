@@ -119,7 +119,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [pushStatus, setPushStatus] = useState<string | null>(null);
-  const [copiedPs, setCopiedPs] = useState<boolean>(false);
 
   const unreadNotifications =
     state?.notifications.filter((n) => !n.is_read) ?? [];
@@ -414,24 +413,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
             </div>
           )}
-
-          <button
-            type="button"
-            onClick={async () => {
-              const res = await fetch("/api/powershell-export");
-              const data = await res.json();
-              if (data.script && navigator.clipboard) {
-                await navigator.clipboard.writeText(data.script);
-                setCopiedPs(true);
-                setTimeout(() => setCopiedPs(false), 5000);
-              }
-            }}
-            className="btn primary w-full h-8 text-[12px]"
-          >
-            {copiedPs
-              ? "Copied! Paste (Ctrl+V) in Windows PowerShell"
-              : "Copy PowerShell Installer (D:\\ + GitHub)"}
-          </button>
 
           <div className="px-2 py-2 rounded-[6px] bg-[var(--raised)] space-y-1">
             <div className="flex items-center justify-between gap-2">

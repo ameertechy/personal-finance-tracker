@@ -134,8 +134,8 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(uncertain.flagged_fields).toContain("transaction_date");
   });
 
-  it("6. Screenshot multi-row extraction & duplicate detection", () => {
-    const existingState = getUserState("usr_uae_owner_01");
+  it("6. Screenshot multi-row extraction & duplicate detection", async () => {
+    const existingState = await getUserState("usr_uae_owner_01");
     const firstTx = existingState.transactions[2]; // Carrefour 342.30 on 2026-10-12
 
     const multiRows = extractMultipleFromScreenshot({
@@ -154,8 +154,8 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(multiRows[1].duplicate_of_id).toBeNull();
   });
 
-  it("7. Credit card purchases, partial & full repayments, and anti-double-counting rules", () => {
-    const userState = getUserState("usr_uae_owner_01");
+  it("7. Credit card purchases, partial & full repayments, and anti-double-counting rules", async () => {
+    const userState = await getUserState("usr_uae_owner_01");
 
     const beforeSummary = calculateAccountingSummary({
       monthKey: "2026-10",
@@ -269,10 +269,12 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(full.status).toBe("paid");
   });
 
-  it("9. Budget calculations & threshold warnings (50%, 75%, 90%, 100%)", () => {
-    const state = getUserState("usr_uae_owner_01");
+  it("9. Budget calculations & threshold warnings (50%, 75%, 90%, 100%)", async () => {
+    const state = await getUserState("usr_uae_owner_01");
+    // Seed data is generated for the current Dubai month.
+    const seedMonth = state.budgets.find((b) => b.is_overall)!.month_key;
     const progress = calculateCategoryBudgets(
-      "2026-10",
+      seedMonth,
       state.budgets,
       state.transactions
     );
@@ -299,15 +301,15 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(cycle.nextDueDate).toBe("2026-12-05");
   });
 
-  it("11. User data isolation, editing & deleting transactions with receipt retention policy", () => {
-    const userA = registerOrAuthenticateUser({
+  it("11. User data isolation, editing & deleting transactions with receipt retention policy", async () => {
+    const userA = await registerOrAuthenticateUser({
       mode: "signup",
       email: `usera_${Date.now()}@test.ae`,
       password: "Password123!",
       fullName: "User A",
       seedDemoData: false,
     });
-    const userB = registerOrAuthenticateUser({
+    const userB = await registerOrAuthenticateUser({
       mode: "signup",
       email: `userb_${Date.now()}@test.ae`,
       password: "Password123!",
@@ -318,7 +320,7 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(userA.ok && userB.ok).toBe(true);
     if (!userA.ok || !userB.ok) return;
 
-    saveUserState(userA.user.userId, (curr) => ({
+    await saveUserState(userA.user.userId, (curr) => ({
       ...curr,
       transactions: [
         {
@@ -358,13 +360,13 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
       ],
     }));
 
-    const stateA = getUserState(userA.user.userId);
-    const stateB = getUserState(userB.user.userId);
+    const stateA = await getUserState(userA.user.userId);
+    const stateB = await getUserState(userB.user.userId);
     expect(stateA.transactions).toHaveLength(1);
     expect(stateB.transactions).toHaveLength(0);
   });
 
-  it("12. Unauthorized receipt access is blocked & file magic bytes are validated", () => {
+  it("12. Unauthorized receipt access is blocked & file magic bytes are validated", async () => {
     const ownerId = "usr_uae_owner_01";
     const attackerId = "usr_attacker_99";
     const receiptId = `rcpt_${ownerId}_1`;
@@ -376,7 +378,7 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     });
 
     // Owner access succeeds
-    const ownerCheck = verifySignedReceiptAccess({
+    const ownerCheck = await verifySignedReceiptAccess({
       token: signed.token,
       requestingUserId: ownerId,
       receiptId,
@@ -384,7 +386,7 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(ownerCheck.authorized).toBe(true);
 
     // Cross-user access with owner's signed token is strictly rejected
-    const attackerCheck = verifySignedReceiptAccess({
+    const attackerCheck = await verifySignedReceiptAccess({
       token: signed.token,
       requestingUserId: attackerId,
       receiptId,
@@ -398,7 +400,7 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
       userId: ownerId,
       ttlSeconds: -10,
     });
-    const expiredCheck = verifySignedReceiptAccess({
+    const expiredCheck = await verifySignedReceiptAccess({
       token: expired.token,
       requestingUserId: ownerId,
       receiptId,
@@ -424,7 +426,7 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
     expect(validPng.valid).toBe(true);
   });
 
-  it("13. CSV statement parser & OCR rate limiter", () => {
+  it("13. CSV statement parser & OCR rate limiter", async () => {
     const csv =
       "Date,Merchant,Amount,Currency,Type,Reference\n2026-10-20,Lulu Hypermarket Al Barsha,210.50,AED,Expense,LULU-101\n2026-10-25,Salary Credit,32000.00,AED,Income,SAL-102";
     const rows = parseStatementCsv(csv);
@@ -456,14 +458,14 @@ describe("Personal Finance Tracker — Core Financial & Security Test Suite", ()
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    storePrivateReceiptBlob({
+    await storePrivateReceiptBlob({
       receipt: dummyReceipt,
       dataUrl: "data:image/png;base64,iVBORw0KGgo=",
     });
   });
 
-  it("14. Personal loan EMI payments, remaining principal calculation, and UAE Debt Burden Ratio (DBR)", () => {
-    const state = getUserState("usr_uae_owner_01");
+  it("14. Personal loan EMI payments, remaining principal calculation, and UAE Debt Burden Ratio (DBR)", async () => {
+    const state = await getUserState("usr_uae_owner_01");
     expect(state.loans.length).toBeGreaterThanOrEqual(2);
 
     const personalLoan = state.loans[0];

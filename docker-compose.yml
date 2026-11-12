@@ -1,0 +1,36 @@
+# Two containers: the app and PostgreSQL. Put the secrets in a .env file next to this
+# file (see .env.example), then run:  docker compose up -d --build
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dirhampulse
+      POSTGRES_USER: dirhampulse
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dirhampulse -d dirhampulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No ports published: only the app container can reach the database.
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://dirhampulse:${POSTGRES_PASSWORD}@db:5432/dirhampulse
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET in .env}
+      RECEIPT_SIGNING_SECRET: ${RECEIPT_SIGNING_SECRET:?set RECEIPT_SIGNING_SECRET in .env}
+    ports:
+      # Reachable only from the server itself. To open it to your network,
+      # change to "43120:43120" (or put a reverse proxy such as Caddy in front).
+      - "127.0.0.1:43120:43120"
+
+volumes:
+  pgdata:

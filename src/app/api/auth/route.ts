@@ -5,10 +5,11 @@ import {
   signSessionToken,
 } from "@/lib/auth-session";
 import {
+  changeUserPassword,
   DEFAULT_DEMO_EMAIL,
   DEFAULT_DEMO_USER_ID,
+  demoSandboxEnabled,
   registerOrAuthenticateUser,
-  resetUserPassword,
 } from "@/lib/server-store";
 
 export async function GET() {
@@ -33,6 +34,12 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "demo_login") {
+      if (!demoSandboxEnabled()) {
+        return NextResponse.json(
+          { error: "The demo sandbox is disabled in production." },
+          { status: 403 }
+        );
+      }
       const session = {
         userId: DEFAULT_DEMO_USER_ID,
         email: DEFAULT_DEMO_EMAIL,
@@ -50,16 +57,20 @@ export async function POST(req: NextRequest) {
       return res;
     }
 
-    if (action === "reset_password") {
+    if (action === "change_password") {
       const email = String(body.email || "");
+      const currentPassword = String(body.currentPassword || "");
       const newPassword = String(body.newPassword || "");
-      if (!email || newPassword.length < 8) {
+      if (!email || !currentPassword || newPassword.length < 8) {
         return NextResponse.json(
-          { error: "Valid email and password (min 8 chars) required." },
+          { error: "Email, current password and a new password (min 8 chars) are required." },
           { status: 400 }
         );
       }
-      const result = resetUserPassword(email, newPassword);
+      const result = await changeUserPassword(email, currentPassword, newPassword);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: 401 });
+      }
       return NextResponse.json(result);
     }
 
@@ -76,7 +87,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const result = registerOrAuthenticateUser({
+      const result = await registerOrAuthenticateUser({
         mode: action,
         email,
         password,

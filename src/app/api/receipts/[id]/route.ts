@@ -20,7 +20,7 @@ export async function GET(
 
   // If no token passed, generate a short-lived signed URL for the owner
   if (!token) {
-    const state = getUserState(session.userId);
+    const state = await getUserState(session.userId);
     const receipt = state.receipts.find((r) => r.id === id);
     if (!receipt || receipt.user_id !== session.userId) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function GET(
   }
 
   // Verify short-lived signed token + strict RLS ownership check
-  const verification = verifySignedReceiptAccess({
+  const verification = await verifySignedReceiptAccess({
     token,
     requestingUserId: session.userId,
     receiptId: id,
@@ -56,7 +56,7 @@ export async function GET(
     );
   }
 
-  const state = getUserState(session.userId);
+  const state = await getUserState(session.userId);
   const receipt = state.receipts.find((r) => r.id === id);
 
   return NextResponse.json({

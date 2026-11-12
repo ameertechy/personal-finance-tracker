@@ -46,7 +46,7 @@ export async function GET() {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const state = getUserState(session.userId);
+  const state = await getUserState(session.userId);
   return NextResponse.json({ session, state });
 }
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       }
 
       const allowDuplicate = Boolean(body.allowDuplicate);
-      const currentState = getUserState(userId);
+      const currentState = await getUserState(userId);
       const createdTransactions: TransactionRecord[] = [];
 
       for (const item of rawItems) {
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
 
       const extractionJobId = body.extractionJobId as string | undefined;
 
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const nextTransactions = [...createdTransactions, ...curr.transactions];
         const nextJobs = extractionJobId
           ? curr.extraction_jobs.map((j) =>
@@ -241,7 +241,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const data = parsed.data;
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const existing = curr.transactions.find(
           (t) => t.id === txId && t.user_id === userId
         );
@@ -297,7 +297,7 @@ export async function POST(req: NextRequest) {
           ? (body.ids as string[])
           : [String(body.id || "")];
 
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const toDelete = curr.transactions.filter(
           (t) => ids.includes(t.id) && t.user_id === userId
         );
@@ -352,7 +352,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const d = parsed.data;
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         if (action === "update_card" && body.id) {
           return {
             ...curr,
@@ -426,7 +426,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const d = parsed.data;
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         if (action === "update_account" && body.id) {
           return {
             ...curr,
@@ -521,7 +521,7 @@ export async function POST(req: NextRequest) {
         updated_at: nowIso,
       };
 
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         statements: [newStmt, ...curr.statements],
       }));
@@ -541,7 +541,7 @@ export async function POST(req: NextRequest) {
       const d = parsed.data;
       const today = getDubaiToday();
 
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const targetCard = curr.cards.find((c) => c.id === d.card_id);
         const cardLabel = targetCard
           ? `${targetCard.display_name} (••${targetCard.last_four})`
@@ -675,7 +675,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const d = parsed.data;
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const existingIdx = curr.budgets.findIndex(
           (b) =>
             b.month_key === d.month_key &&
@@ -734,7 +734,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
         if (curr.categories.some((c) => c.slug === slug)) return curr;
         const newCat: CategoryRecord = {
@@ -766,7 +766,7 @@ export async function POST(req: NextRequest) {
         );
       }
       const d = parsed.data;
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const newRec: RecurringTransactionRecord = {
           id: `rec_${crypto.randomBytes(6).toString("hex")}`,
           user_id: userId,
@@ -798,7 +798,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "confirm_recurring") {
       const recId = String(body.id || "");
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const rec = curr.recurring.find(
           (r) => r.id === recId && r.user_id === userId
         );
@@ -881,7 +881,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "delete_recurring") {
       const recId = String(body.id || "");
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         recurring: curr.recurring.filter(
           (r) => !(r.id === recId && r.user_id === userId)
@@ -893,7 +893,7 @@ export async function POST(req: NextRequest) {
     // 11. Update Profile & Notification Preferences
     if (action === "update_profile") {
       const p = body.profile || {};
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         profile: {
           ...curr.profile,
@@ -929,7 +929,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "update_notification_preferences") {
       const prefs = body.preferences || {};
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         notification_preferences: {
           ...curr.notification_preferences,
@@ -941,7 +941,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "mark_notifications_read") {
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         notifications: curr.notifications.map((n) => ({
           ...n,
@@ -994,7 +994,7 @@ export async function POST(req: NextRequest) {
         updated_at: nowIso,
       };
 
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         loans: [newLoan, ...(curr.loans || [])],
         audit_logs: [
@@ -1025,7 +1025,7 @@ export async function POST(req: NextRequest) {
       }
       const d = parsed.data;
 
-      const updatedState = saveUserState(userId, (curr) => {
+      const updatedState = await saveUserState(userId, (curr) => {
         const targetLoan = (curr.loans || []).find(
           (l) => l.id === d.loan_id && l.user_id === userId
         );
@@ -1136,7 +1136,7 @@ export async function POST(req: NextRequest) {
 
     if (action === "delete_loan") {
       const loanId = String(body.id || "");
-      const updatedState = saveUserState(userId, (curr) => ({
+      const updatedState = await saveUserState(userId, (curr) => ({
         ...curr,
         loans: (curr.loans || []).filter(
           (l) => !(l.id === loanId && l.user_id === userId)
@@ -1154,12 +1154,12 @@ export async function POST(req: NextRequest) {
         fullName: session.fullName,
         seedDemoData: seedDemo,
       });
-      const updatedState = saveUserState(userId, () => fresh);
+      const updatedState = await saveUserState(userId, () => fresh);
       return NextResponse.json({ ok: true, state: updatedState });
     }
 
     if (action === "delete_account") {
-      deleteUserAccountAndData(userId);
+      await deleteUserAccountAndData(userId);
       const res = NextResponse.json({ ok: true, deleted: true });
       res.cookies.delete(SESSION_COOKIE_NAME);
       res.cookies.set("dp_signed_out", "1", {
